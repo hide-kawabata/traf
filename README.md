@@ -14,11 +14,13 @@ Requirements:
 - Lablgtk 2.18.5
 - OCaml 4.05.0
 
-###Installation
+##Installation
 
 1. Obtain prooftree-0.13.tar.gz and check files. 
 
  `$ tar zxfv prooftree-0.13.tar.gz`
+ 
+ See `https://askra.de/software/prooftree/` for details of Prooftree.
 
 2. Put additional files and a patch file in the directory.
 
@@ -38,7 +40,7 @@ Requirements:
   `$ make install` (optional)
 
  
-###Settings
+##Settings
  Put following lines in `.emacs`.
 
   `(setq coq-prog-name "/somewhere/coqtop")`
@@ -46,6 +48,6 @@ Requirements:
   `(setq exec-path (cons "/where/traf/resides/" exec-path))`
   `(load "/somewhere/pg/is/installed/generic/proof-site")`
 
-###Use
+##Use
 - While proving by using Proof General, you can invoke Traf by clicking `prooftree` icon, or equivalently, type `C-c C-d`.
 - When a Theorem/Lemma/Example, etc., is finished, the connection between PG and Traf is closed. When you start proving next Theorem, invoke Traf again.
