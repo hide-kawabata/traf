@@ -1,0 +1,2642 @@
+diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
+*** prooftree-0.13/Makefile.in	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/Makefile.in	2018-04-23 00:31:56.000000000 +0900
+***************
+*** 75,80 ****
+--- 75,82 ----
+  ML_SOURCES:=\
+  	version.ml \
+  	util.ml \
++ 	traf_aux.ml \
++ 	conv_latex.ml \
+  	gtk_ext.ml \
+  	configuration.ml \
+  	draw_tree.ml \
+***************
+*** 118,129 ****
+  	$(OCAMLC) -c $(OCAMLFLAGS) $<
+  
+  
+! TOCLEAN+=prooftree
+  
+  .PHONY: prooftree.opt
+  prooftree.opt: $(CMX_OBJECTS)
+! 	$(OCAMLC) -g -I $(LABLGTKDIR) -o prooftree \
+! 		unix.cmxa lablgtk.cmxa gtkInit.cmx $^
+  
+  .PHONY: prooftree.byte
+  prooftree.byte: $(CMO_OBJECTS)
+--- 120,131 ----
+  	$(OCAMLC) -c $(OCAMLFLAGS) $<
+  
+  
+! TOCLEAN+=traf
+  
+  .PHONY: prooftree.opt
+  prooftree.opt: $(CMX_OBJECTS)
+! 	$(OCAMLC) -g -I $(LABLGTKDIR) -o traf \
+! 		unix.cmxa lablgtk.cmxa gtkInit.cmx str.cmxa $^
+  
+  .PHONY: prooftree.byte
+  prooftree.byte: $(CMO_OBJECTS)
+diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
+*** prooftree-0.13/about_window.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/about_window.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 50,55 ****
+--- 50,60 ----
+  
+  (** Text for the about dialog. *)
+  let about_comment =
++   "Traf displays proof trees for Coq under control of the Proof General user interface. \
++    Traf is an extention of Prooftree version 0.13. \
++    Traf has been developed by Hideyuki Kawabata and Yuta Tanaka, \
++    with the cooperation of Yuuki Sasaki and Mai Kimura.\n\n"
++ ^
+    "Prooftree displays proof trees for Coq and HOL Light under control of \
+     the Proof General user interface. Prooftree has been developed by \
+     Hendrik Tews and is published under GPL version 3. For more information \
+***************
+*** 64,73 ****
+      | None ->
+        let about = 
+  	GWindow.about_dialog 
+! 	  ~name:"Prooftree"
+  	  ~comments:about_comment
+  	  ~copyright:("Prooftree version " ^ Version.version 
+  		      ^ " © Hendrik Tews")
+  	  (* ~website_label:string -> *)
+  	  (* ~parent:#window_skel -> *)
+  	  (* ~destroy_with_parent:bool -> *)
+--- 69,80 ----
+      | None ->
+        let about = 
+  	GWindow.about_dialog 
+! 	  ~name:"Traf"
+  	  ~comments:about_comment
++ (*
+  	  ~copyright:("Prooftree version " ^ Version.version 
+  		      ^ " © Hendrik Tews")
++  *)
+  	  (* ~website_label:string -> *)
+  	  (* ~parent:#window_skel -> *)
+  	  (* ~destroy_with_parent:bool -> *)
+diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
+*** prooftree-0.13/configuration.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/configuration.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 42,48 ****
+  let config_file_location = 
+    Filename.concat
+      (Sys.getenv "HOME")
+!     ".prooftree"
+  
+  (** Configuration record. For simplicity the user specific
+      configuration file is (mostly) a marshaled configuration record.
+--- 42,48 ----
+  let config_file_location = 
+    Filename.concat
+      (Sys.getenv "HOME")
+!     ".traf"
+  
+  (** Configuration record. For simplicity the user specific
+      configuration file is (mostly) a marshaled configuration record.
+***************
+*** 230,247 ****
+  
+  (** Create the default, builtin configuration record. *)
+  let default_configuration = 
+!   let radius = 10 in
+    let blue = GDraw.color (`NAME "blue") in
+    let red = GDraw.color (`NAME "red") in
+    let c = {
+      turnstile_radius = radius;
+!     turnstile_line_width = 2;
+!     proof_command_length = 15;
+!     subtree_sep = 5;
+!     line_sep = 3;
+!     level_distance = 38;
+!     proof_tree_sep = 15;
+!     layer_sep = 30;
+  
+      turnstile_left_bar_x_offset = 0;
+      turnstile_left_bar_y_offset = 0;
+--- 230,247 ----
+  
+  (** Create the default, builtin configuration record. *)
+  let default_configuration = 
+!   let radius = 20 in
+    let blue = GDraw.color (`NAME "blue") in
+    let red = GDraw.color (`NAME "red") in
+    let c = {
+      turnstile_radius = radius;
+!     turnstile_line_width = 1;
+!     proof_command_length = 20;
+!     subtree_sep = 30;
+!     line_sep = 15; (* unused *)
+!     level_distance = 15;
+!     proof_tree_sep = 30;
+!     layer_sep = 20;
+  
+      turnstile_left_bar_x_offset = 0;
+      turnstile_left_bar_y_offset = 0;
+***************
+*** 250,263 ****
+  
+      button_1_drag_acceleration = 4.0;
+  
+!     proof_tree_font = "Sans 8";
+!     sequent_font = "Sans 8";
+  
+      current_color = 
+        (Gdk.Color.red blue, Gdk.Color.green blue, Gdk.Color.blue blue);
+      cheated_color = 
+        (Gdk.Color.red red, Gdk.Color.green red, Gdk.Color.blue red);
+!     proved_complete_color = (19 * 255, 197 * 256, 19 * 255);
+      proved_partial_color = (100 * 256, 114 * 256, 0 * 256);
+      proved_incomplete_color = (26 * 255, 226 * 256, 216 * 256);
+      (* mark_subtree_color = (0,0,0); *)
+--- 250,263 ----
+  
+      button_1_drag_acceleration = 4.0;
+  
+!     proof_tree_font = "Helvetica 13"; (* Candara 15 *) (* "Menlo 15"; *)
+!     sequent_font = "Helvetica 10"; (* "Arial 10"; *)
+  
+      current_color = 
+        (Gdk.Color.red blue, Gdk.Color.green blue, Gdk.Color.blue blue);
+      cheated_color = 
+        (Gdk.Color.red red, Gdk.Color.green red, Gdk.Color.blue red);
+!     proved_complete_color = (76 * 255, 108 * 255, 76 * 255);
+      proved_partial_color = (100 * 256, 114 * 256, 0 * 256);
+      proved_incomplete_color = (26 * 255, 226 * 256, 216 * 256);
+      (* mark_subtree_color = (0,0,0); *)
+***************
+*** 268,283 ****
+      display_turnstile_tooltips = true;
+      display_command_tooltips = true;
+  
+!     default_width_proof_tree_window = 400;
+!     default_height_proof_tree_window = 400;
+  
+!     internal_sequent_window_lines = 1;
+      node_window_max_lines = 35;
+      ext_table_lines = 8;
+  
+      debug_mode = false;
+      copy_input = false;
+!     copy_input_file = "/tmp/prooftree.log";
+    }
+    in
+    update_sizes c
+--- 268,283 ----
+      display_turnstile_tooltips = true;
+      display_command_tooltips = true;
+  
+!     default_width_proof_tree_window = 700;
+!     default_height_proof_tree_window = 600;
+  
+!     internal_sequent_window_lines = 15;
+      node_window_max_lines = 35;
+      ext_table_lines = 8;
+  
+      debug_mode = false;
+      copy_input = false;
+!     copy_input_file = Util.homedir () ^ "/.traf-log";
+    }
+    in
+    update_sizes c
+***************
+*** 451,460 ****
+  *)
+  
+  (** Common header of all configuration files. *)
+! let config_file_header_start = "Prooftree configuration file version "
+  
+  (** Version specific header of the current config file version. *)
+! let config_file_version = "04"
+  
+  (** The complete ASCII header of configuration files. *)
+  let config_file_header = config_file_header_start ^ config_file_version ^ "\n"
+--- 451,460 ----
+  *)
+  
+  (** Common header of all configuration files. *)
+! let config_file_header_start = "Traf configuration file version "
+  
+  (** Version specific header of the current config file version. *)
+! let config_file_version = "01"
+  
+  (** The complete ASCII header of configuration files. *)
+  let config_file_header = config_file_header_start ^ config_file_version ^ "\n"
+***************
+*** 605,611 ****
+    top_window
+    line_width_adjustment
+    turnstile_size_adjustment
+!   line_sep_adjustment
+    proof_tree_sep_adjustment
+    subtree_sep_adjustment
+    command_length_adjustment
+--- 605,611 ----
+    top_window
+    line_width_adjustment
+    turnstile_size_adjustment
+!   (* line_sep_adjustment *)
+    proof_tree_sep_adjustment
+    subtree_sep_adjustment
+    command_length_adjustment
+***************
+*** 658,664 ****
+      line_width_adjustment#set_value (float_of_int conf.turnstile_line_width);
+      turnstile_size_adjustment#set_value (float_of_int conf.turnstile_radius);
+      subtree_sep_adjustment#set_value (float_of_int conf.subtree_sep);
+!     line_sep_adjustment#set_value (float_of_int conf.line_sep);
+      proof_tree_sep_adjustment#set_value (float_of_int conf.proof_tree_sep);
+      command_length_adjustment#set_value (float_of_int conf.proof_command_length);
+      level_dist_adjustment#set_value (float_of_int conf.level_distance);
+--- 658,664 ----
+      line_width_adjustment#set_value (float_of_int conf.turnstile_line_width);
+      turnstile_size_adjustment#set_value (float_of_int conf.turnstile_radius);
+      subtree_sep_adjustment#set_value (float_of_int conf.subtree_sep);
+!     (* line_sep_adjustment#set_value (float_of_int conf.line_sep); *)
+      proof_tree_sep_adjustment#set_value (float_of_int conf.proof_tree_sep);
+      command_length_adjustment#set_value (float_of_int conf.proof_command_length);
+      level_dist_adjustment#set_value (float_of_int conf.level_distance);
+***************
+*** 754,760 ****
+      let c = {
+        turnstile_line_width = round_to_int line_width_adjustment#value;
+        turnstile_radius = round_to_int turnstile_size_adjustment#value;
+!       line_sep = round_to_int line_sep_adjustment#value;
+        proof_tree_sep = round_to_int proof_tree_sep_adjustment#value;
+        subtree_sep = round_to_int subtree_sep_adjustment#value;
+        proof_command_length = round_to_int command_length_adjustment#value;
+--- 754,761 ----
+      let c = {
+        turnstile_line_width = round_to_int line_width_adjustment#value;
+        turnstile_radius = round_to_int turnstile_size_adjustment#value;
+!       (* line_sep = round_to_int line_sep_adjustment#value; *)
+!       line_sep = 15; (* dummy *)
+        proof_tree_sep = round_to_int proof_tree_sep_adjustment#value;
+        subtree_sep = round_to_int subtree_sep_adjustment#value;
+        proof_command_length = round_to_int command_length_adjustment#value;
+***************
+*** 995,1001 ****
+    let top_window = GWindow.window () in
+    let top_v_box = GPack.vbox ~packing:top_window#add () in
+    let _config_title = GMisc.label
+!     ~markup:"<big><b>Prooftree Configuration</b></big>"
+      ~xpad:10 ~ypad:10
+      ~packing:top_v_box#pack () in
+  
+--- 996,1002 ----
+    let top_window = GWindow.window () in
+    let top_v_box = GPack.vbox ~packing:top_window#add () in
+    let _config_title = GMisc.label
+!     ~markup:"<big><b>Traf Configuration</b></big>"
+      ~xpad:10 ~ypad:10
+      ~packing:top_v_box#pack () in
+  
+***************
+*** 1041,1050 ****
+  
+    (* turnstile radius *)
+    let turnstile_size_tooltip = 
+      "Radius of the circle around the current turnstile; determines \
+       the size of the turnstile as well" in
+    let turnstile_size_label = GMisc.label
+!     ~text:"Turnstile size" ~xalign:0.0 ~xpad:5
+      ~packing:(tree_frame_table#attach ~left:0 ~top:1) () in
+    let turnstile_size_spinner = GEdit.spin_button
+      ~digits:0 ~numeric:true
+--- 1042,1055 ----
+  
+    (* turnstile radius *)
+    let turnstile_size_tooltip = 
++ (*
+      "Radius of the circle around the current turnstile; determines \
+       the size of the turnstile as well" in
++  *)
++     "Vertical offset" in
+    let turnstile_size_label = GMisc.label
+!     (* ~text:"Turnstile size" ~xalign:0.0 ~xpad:5 *)
+!     ~text:"Vertical offset" ~xalign:0.0 ~xpad:5
+      ~packing:(tree_frame_table#attach ~left:0 ~top:1) () in
+    let turnstile_size_spinner = GEdit.spin_button
+      ~digits:0 ~numeric:true
+***************
+*** 1057,1066 ****
+    turnstile_size_spinner#misc#set_tooltip_text turnstile_size_tooltip;
+  
+    (* line_sep *)
+    let line_sep_tooltip = 
+!     "Gap between the node connecting lines and the nodes" in
+    let line_sep_label = GMisc.label
+!     ~text:"Line gap" ~xalign:0.0 ~xpad:5
+      ~packing:(tree_frame_table#attach ~left:0 ~top:2) () in
+    let line_sep_spinner = GEdit.spin_button
+      ~digits:0 ~numeric:true
+--- 1062,1074 ----
+    turnstile_size_spinner#misc#set_tooltip_text turnstile_size_tooltip;
+  
+    (* line_sep *)
++ (*
+    let line_sep_tooltip = 
+!     (* "Gap between the node connecting lines and the nodes" in *)
+!     "Command height measured from line between two sequents." in
+    let line_sep_label = GMisc.label
+!     (* ~text:"Line gap" ~xalign:0.0 ~xpad:5 *)
+!     ~text:"Command height" ~xalign:0.0 ~xpad:5
+      ~packing:(tree_frame_table#attach ~left:0 ~top:2) () in
+    let line_sep_spinner = GEdit.spin_button
+      ~digits:0 ~numeric:true
+***************
+*** 1071,1076 ****
+--- 1079,1085 ----
+      (float_of_int current_config.line_sep);
+    line_sep_label#misc#set_tooltip_text line_sep_tooltip;
+    line_sep_spinner#misc#set_tooltip_text line_sep_tooltip;
++  *)
+  
+    (* proof_tree_sep *)
+    let proof_tree_sep_tooltip = 
+***************
+*** 1556,1562 ****
+        top_window 
+        line_width_adjustment
+        turnstile_size_adjustment
+!       line_sep_adjustment
+        proof_tree_sep_adjustment
+        subtree_sep_adjustment
+        command_length_adjustment
+--- 1565,1571 ----
+        top_window 
+        line_width_adjustment
+        turnstile_size_adjustment
+!       (* line_sep_adjustment *)
+        proof_tree_sep_adjustment
+        subtree_sep_adjustment
+        command_length_adjustment
+***************
+*** 1585,1591 ****
+        tee_file_name_entry
+        [ line_width_label#misc; line_width_spinner#misc;
+  	turnstile_size_label#misc; turnstile_size_spinner#misc;
+! 	line_sep_label#misc; line_sep_spinner#misc;
+  	proof_tree_sep_label#misc; proof_tree_sep_spinner#misc;
+  	subtree_sep_label#misc; subtree_sep_spinner#misc;
+  	command_length_label#misc; command_length_spinner#misc;
+--- 1594,1600 ----
+        tee_file_name_entry
+        [ line_width_label#misc; line_width_spinner#misc;
+  	turnstile_size_label#misc; turnstile_size_spinner#misc;
+! 	(* line_sep_label#misc; line_sep_spinner#misc; *)
+  	proof_tree_sep_label#misc; proof_tree_sep_spinner#misc;
+  	subtree_sep_label#misc; subtree_sep_spinner#misc;
+  	command_length_label#misc; command_length_spinner#misc;
+***************
+*** 1616,1626 ****
+        ]
+    in
+  
+!   top_window#set_title "Prooftree Configuration";
+    config_window#toggle_tooltips current_config.display_doc_tooltips;
+    List.iter (fun adj -> ignore(adj#connect#value_changed
+  				 ~callback:config_window#config_changed))
+!     [line_width_adjustment; turnstile_size_adjustment; line_sep_adjustment; 
+       proof_tree_sep_adjustment; subtree_sep_adjustment; 
+       command_length_adjustment; level_dist_adjustment; layer_sep_adjustment;
+       drag_accel_adjustment; default_size_width_adjustment; 
+--- 1625,1636 ----
+        ]
+    in
+  
+!   top_window#set_title "Traf Configuration";
+    config_window#toggle_tooltips current_config.display_doc_tooltips;
+    List.iter (fun adj -> ignore(adj#connect#value_changed
+  				 ~callback:config_window#config_changed))
+!     [line_width_adjustment; turnstile_size_adjustment;
+!      (* line_sep_adjustment; *)
+       proof_tree_sep_adjustment; subtree_sep_adjustment; 
+       command_length_adjustment; level_dist_adjustment; layer_sep_adjustment;
+       drag_accel_adjustment; default_size_width_adjustment; 
+Only in traf-0.1: conv_latex.ml
+diff -c prooftree-0.13/coq.ml traf-0.1/coq.ml
+*** prooftree-0.13/coq.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/coq.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 106,111 ****
+--- 106,112 ----
+    Scanf.bscanf scan_buf "%c" (function 
+      | '?' -> coq_parse_one_evar_info scan_buf uninst inst
+      | ')' -> (List.rev uninst, List.rev inst)
++     | '(' -> ([],[]) (* workaround for Coq 8.6.1 *)
+      | c ->
+        raise (Scanf.Scan_failure
+  	       (Printf.sprintf
+***************
+*** 134,139 ****
+--- 135,147 ----
+      displayed.
+  *)
+  let coq_parse_existential_info ex_string =
++ (*
++   Printf.fprintf (Util.debugc()) "[cPEI] ex_string=<%s>\n%!" ex_string;
++  *)
++   if String.length ex_string <= 0 then ([],[])
++   else
++   begin
++ 
+    let scan_buf = Scanf.Scanning.from_string ex_string in
+    try
+      Scanf.bscanf scan_buf "(dependent evars: " 
+***************
+*** 155,158 ****
+  	   ex_string)
+      | _ -> assert false
+  
+! 
+--- 163,166 ----
+  	   ex_string)
+      | _ -> assert false
+  
+!   end
+diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
+*** prooftree-0.13/draw_tree.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/draw_tree.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 551,556 ****
+--- 551,564 ----
+    *)
+    val mutable sequent_text_history = []
+  
++   (** Width (in pixels) of the rendered text. *)
++   val mutable layout_width = 0
++ 
++   (** Height (in pixels) of the rendered text. *)
++   val mutable layout_height = 0
++ 
++   val mutable text_begin_point = 0
++   val mutable text_end_point = 0
+  
+    (***************************************************************************)
+    (***************************************************************************)
+***************
+*** 631,636 ****
+--- 639,659 ----
+    method set_sequent_text_history history =
+      sequent_text_history <- history
+  
++   method layout_width = layout_width
++   method layout_height = layout_height
++   method virtual displayed_content : string
++   method virtual assumptions : (string * string) list
++ 
++   val mutable abbrev_flag = false
++   method abbrev_flag = abbrev_flag
++   method invert_abbrev_flag =
++     abbrev_flag <- match abbrev_flag with true -> false | _ -> true
++   method invert_abbreviated_subtree = begin
++       self#invert_abbrev_flag;
++       self#set_node_size;
++       self#iter_all_children_unit 0 0 (fun left y n -> 
++           n#invert_abbreviated_subtree);
++     end
+  
+    (***************************************************************************)
+    (***************************************************************************)
+***************
+*** 670,675 ****
+--- 693,715 ----
+      self#iter_children left y ()
+        (fun left y () c -> f left y c; ((), true))
+  
++   (* This method used in {find_node_for_point}. 
++      Except for calculating y, it is exactly the same as {iter_children}. *)
++   method private iter_children_for_find_node_for_point :
++     'a . int -> int -> 'a -> 
++       (int -> int -> 'a -> proof_tree_element -> ('a * bool)) -> 'a =
++     fun left y a f ->
++       let left = left + first_child_offset in
++       let y = y - !current_config.level_distance in (* <==== *)
++       let rec doit left a = function
++ 	| [] -> a
++ 	| c::cs -> 
++ 	  let (na, cont) = f left y a c in
++ 	  if cont
++ 	  then doit (left + c#subtree_width) na cs
++ 	  else na
++       in
++       doit left a children
+  
+    (***************************************************************************)
+    (***************************************************************************)
+***************
+*** 713,719 ****
+      in
+                                  (***************** inside proof_tree_element *)
+      subtree_levels <- max_levels + 1;
+!     subtree_width <- children_width;
+      x_offset <- 
+        (match children with
+  	| [] -> 0
+--- 753,774 ----
+      in
+                                  (***************** inside proof_tree_element *)
+      subtree_levels <- max_levels + 1;
+!     let additional_width =
+!       match last_child with
+!       | None -> 0
+!       | Some p -> 
+!          if p#node_kind = Turnstile then
+!            match p#children with
+!            | [] -> self#layout_width
+!            | [pc] -> max 0 (self#layout_width - pc#layout_width)
+!            | _ -> assert false
+!          else if p#node_kind = Proof_command && [] = p#children then
+!            self#layout_width
+!          else
+!            0
+!     in
+!     subtree_width <- children_width + additional_width;
+! 
+      x_offset <- 
+        (match children with
+  	| [] -> 0
+***************
+*** 836,846 ****
+  	    let (tl_left, tl_top) = tl#left_top_offset in
+  	    let (me_left, me_top) = 
+  	      tl#child_offsets (self :> proof_tree_element) in
+! 	    (tl_left + me_left, tl_top + me_top + height / 2)
+  	)
+        | Some p ->
+  	let (parent_left, parent_y) = p#left_y_offsets in
+! 	let y_off = parent_y + !current_config.level_distance in
+  	let left_off = 
+  	  parent_left + p#child_offset (self :> proof_tree_element) 
+  	in
+--- 891,902 ----
+  	    let (tl_left, tl_top) = tl#left_top_offset in
+  	    let (me_left, me_top) = 
+  	      tl#child_offsets (self :> proof_tree_element) in
+! 	    (tl_left + me_left, tl_top + me_top + height / 2
+!              + !current_config.level_distance * (subtree_levels ))  (* <=== *)
+  	)
+        | Some p ->
+  	let (parent_left, parent_y) = p#left_y_offsets in
+! 	let y_off = parent_y - !current_config.level_distance in  (* <=== *)
+  	let left_off = 
+  	  parent_left + p#child_offset (self :> proof_tree_element) 
+  	in
+***************
+*** 934,939 ****
+--- 990,997 ----
+  	  ~x:(cx - c_d_x) ~y:(cy - c_d_y);
+  	restore_gc drawable gc_opt)
+  
++   method text_begin_point = text_begin_point
++   method text_end_point = text_end_point
+  
+                                  (***************** inside proof_tree_element *)
+    (** Draw this element's subtree given the left side of the bounding box
+***************
+*** 944,950 ****
+                    this node's subtree
+        @param y y-coordinate of this node
+    *)
+!   method draw_subtree left y =
+      (* 
+       * Printf.fprintf (debugc())
+       * "DST %s parent %s childs %s width %d tree_width %d\n%!"
+--- 1002,1008 ----
+                    this node's subtree
+        @param y y-coordinate of this node
+    *)
+!   method draw_subtree left y root_y_coordinate =
+      (* 
+       * Printf.fprintf (debugc())
+       * "DST %s parent %s childs %s width %d tree_width %d\n%!"
+***************
+*** 957,967 ****
+       *   subtree_width;
+       *)
+      let gc_opt = save_and_set_gc drawable branch_state existential_variables in
+!     self#draw left y;
+      restore_gc drawable gc_opt;
+!     self#draw_lines left y;
+      self#iter_all_children_unit left y
+!       (fun left y child -> child#draw_subtree left y)
+  
+  
+                                  (***************** inside proof_tree_element *)
+--- 1015,1025 ----
+       *   subtree_width;
+       *)
+      let gc_opt = save_and_set_gc drawable branch_state existential_variables in
+!     self#draw left (root_y_coordinate - y);
+      restore_gc drawable gc_opt;
+!     (* self#draw_lines left y; *)
+      self#iter_all_children_unit left y
+!       (fun left y child -> child#draw_subtree left y root_y_coordinate)
+  
+  
+                                  (***************** inside proof_tree_element *)
+***************
+*** 974,981 ****
+        @param top y-coordinate of the top side of the bounding box of this 
+                   node's subtree
+    *)
+!   method draw_tree_root left top =
+!     self#draw_subtree left (top + height / 2)
+  
+  
+    (***************************************************************************)
+--- 1032,1039 ----
+        @param top y-coordinate of the top side of the bounding box of this 
+                   node's subtree
+    *)
+!   method draw_tree_root left top root_y_coordinate =
+!     self#draw_subtree left (top + height / 2) root_y_coordinate
+  
+  
+    (***************************************************************************)
+***************
+*** 998,1014 ****
+        @param by y-coordinate of point
+    *)
+    method find_node_for_point left y bx by =
+!     let top = y - height / 2 in
+!     if bx >= left && bx <= left + subtree_width &&
+!       by >= top && by <= top + self#subtree_height
+      then
+!       let x = self#get_x_coordinate left in
+!       if bx >= x - width/2 && bx <= x + width/2 &&
+! 	by >= y - height/2 && by <= y + height/2
+        then
+  	Some (self :> proof_tree_element)
+        else
+! 	self#iter_children left y None
+  	  (fun left y _a child ->
+  	    let cres = child#find_node_for_point left y bx by in
+  	    (cres, cres = None))
+--- 1056,1071 ----
+        @param by y-coordinate of point
+    *)
+    method find_node_for_point left y bx by =
+!     if bx >= left && bx <= left + subtree_width + layout_width
+!        && by <= y + self#height/2 + 2
+      then
+!       if bx >= self#text_begin_point && bx <= self#text_end_point
+! 	 && by >= y - self#height/2 - 2
+! 	 && by <= y + self#height/2 + 2
+        then
+  	Some (self :> proof_tree_element)
+        else
+! 	self#iter_children_for_find_node_for_point left y None
+  	  (fun left y _a child ->
+  	    let cres = child#find_node_for_point left y bx by in
+  	    (cres, cres = None))
+***************
+*** 1030,1036 ****
+        @param by y-coordinate of point
+    *)
+    method find_node_for_point_root left top bx by =
+!     self#find_node_for_point left (top + height/2) bx by
+  
+  
+    (***************************************************************************)
+--- 1087,1093 ----
+        @param by y-coordinate of point
+    *)
+    method find_node_for_point_root left top bx by =
+!     self#find_node_for_point left (top + !current_config.turnstile_left_bar_y_offset) bx by
+  
+  
+    (***************************************************************************)
+***************
+*** 1147,1152 ****
+--- 1204,1210 ----
+    (***************************************************************************)
+    (***************************************************************************)
+  
++   method virtual displayed_text_pre : string
+                                  (***************** inside proof_tree_element *)
+    (** Return the displayed text for proof-tree elements, which
+        contains additional information about uninstantiated and
+***************
+*** 1156,1164 ****
+      let uninst_ex = filter_uninstantiated existential_variables in
+      let partial_ex = filter_partially_instantiated existential_variables in
+      if uninst_ex = [] && partial_ex = []
+!     then self#content
+      else 
+!       self#content 
+        ^ "\n\n"
+        ^ (if uninst_ex <> [] 
+  	then "Open Existentials: " 
+--- 1214,1222 ----
+      let uninst_ex = filter_uninstantiated existential_variables in
+      let partial_ex = filter_partially_instantiated existential_variables in
+      if uninst_ex = [] && partial_ex = []
+!     then self#displayed_text_pre
+      else 
+!       self#displayed_text_pre
+        ^ "\n\n"
+        ^ (if uninst_ex <> [] 
+  	then "Open Existentials: " 
+***************
+*** 1253,1258 ****
+--- 1311,1327 ----
+  (*****************************************************************************)
+  (*****************************************************************************)
+  
++ (** Create a new layout with fonts from the current configuration.
++     This function exists, because (I)
++     Pango.Layout.set_font_description is missing in Debian Squeeze and
++     (II) one cannot call a method in the initializer of the instance
++     variable layout.
++ *)
++ (* Note that the defined site has been moved. *)
++ let make_layout context =
++   context#set_font_description !proof_tree_font_desc;
++   context#create_layout
++ 
+  (** Specific element class for sequents, which draw themselves as
+      turnstile symbols. This class specializes the abstract
+      {!proof_tree_element} class for sequent nodes in the proof tree.
+***************
+*** 1260,1269 ****
+      Argument undo_state saves the undo state for the current proof.
+      It's value is arbitrary for cloned proof trees.
+  *)
+! class turnstile (drawable : better_drawable) 
+                  undo_state sequent_id sequent_text_option =
+  object (self)
+!   inherit proof_tree_element drawable undo_state sequent_id [] [] as super
+  
+    (** The pure sequent text. *)
+    val mutable sequent_text = 
+--- 1329,1338 ----
+      Argument undo_state saves the undo state for the current proof.
+      It's value is arbitrary for cloned proof trees.
+  *)
+! class turnstile (drawable_arg : better_drawable) 
+                  undo_state sequent_id sequent_text_option =
+  object (self)
+!   inherit proof_tree_element drawable_arg undo_state sequent_id [] [] as super
+  
+    (** The pure sequent text. *)
+    val mutable sequent_text = 
+***************
+*** 1274,1280 ****
+    (** Pango layout for rendering text. Only created if an ID for
+        an external window must be put into the display.
+    *)
+!   val mutable layout = None
+  
+    (** This is a [Turnstile] node. *)
+    method node_kind = Turnstile
+--- 1343,1349 ----
+    (** Pango layout for rendering text. Only created if an ID for
+        an external window must be put into the display.
+    *)
+!   val mutable layout = make_layout drawable_arg#pango_context
+  
+    (** This is a [Turnstile] node. *)
+    method node_kind = Turnstile
+***************
+*** 1282,1287 ****
+--- 1351,1439 ----
+    (** Return the pure sequent text as content. *)
+    method content = sequent_text
+  
++   val mutable displayed_seq_text = ""
++ 
++   val mutable assumption_list = ([] : (string * string) list)
++ 
++   method assumptions = assumption_list
++ 
++   method update_assumption new_list =
++     assumption_list <- new_list
++ 
++   method displayed_text_pre =
++     let content_str = Traf_aux.rewrite_symbols self#content in
++     let str =
++       Traf_aux.rewrite_symbols
++         (Traf_aux.print_current_assumptions self#assumptions)
++       ^ "\n-------------------------------------\n"
++       ^ content_str
++       ^ (if !current_config.debug_mode
++          then
++            "\n\n"
++            ^ ("branch_state_type : " ^
++                 match self#branch_state with
++                 | Unproven -> "Unproven"
++                 | CurrentNode -> "CurrentNode"
++                 | Current -> "Current"
++                 | Cheated -> "Cheated"
++                 | Proven -> "Proven"
++              )
++            ^ "\n"
++            ^ "Abbreviated : " ^ (if self#abbrev_flag then "Yes" else "No") 
++            ^ "\n"
++            ^ "width : " ^ (string_of_int self#width)
++            ^ "\n"
++            ^ "layout_width : " ^ (string_of_int self#layout_width)
++            ^ "\n"
++            ^ "subtree_width : " ^ (string_of_int self#subtree_width)
++          else "") in
++     str
++ 
++   method private set_displayed_seq_text =
++     let seq_text = Str.global_replace (Str.regexp " +") " "
++                      (Str.global_replace (Str.regexp "\n") " "
++                         (Traf_aux.rewrite_symbols self#content)) in
++     let len = 100 in
++     if Util.utf8_string_length seq_text <= len
++     then
++       displayed_seq_text <- seq_text
++     else begin
++         displayed_seq_text <-
++ 	  (replace_char
++ 	     (Util.utf8_string_sub seq_text
++ 	        (len - 1))
++ 	     '\n' ' ')
++           ^ "\226\128\166" 			(* append horizontal ellipsis *)
++       end
++ 
++   method private abbreviated_seq_text displayed_seq_text =
++     let one_line_text = displayed_seq_text in
++     if self#abbrev_flag then "●"
++     else if !Traf_aux.show_current_only_flag then
++       match self#branch_state with
++       | Proven -> "●"
++       | Unproven -> "●"
++       | Current -> one_line_text
++       | CurrentNode -> one_line_text
++       | Cheated -> "●"
++     else one_line_text
++ 
++ 
++   (** Return the displayed (maybe abbreviated) sequent text. *)
++   method displayed_content =
++     let one_line = Str.global_replace (Str.regexp " +") " "
++                      (Str.global_replace (Str.regexp "\n") " " self#content) in
++     self#abbreviated_seq_text one_line
++ 
++ (* (* p30 *)
++   method update_diff_sequent text_option =
++     let text = match text_option with
++       | Some t -> (t : string)
++       | None -> ("waiting for sequent text" : string)
++     in
++     diff_sequent_text <- text
++  *)
++ 
+    (** This method is not relevant for sequent elements. Return always
+        false.
+    *)
+***************
+*** 1321,1344 ****
+      List.iter (fun ew -> ew#update_content sequent_text_history)
+        external_windows
+  
+-   (** Return the pango layout object of {!layout}. Create one if there
+-       is none.
+-   *)
+-   method private get_layout =
+-     match layout with
+-       | None -> 
+- 	drawable#pango_context#set_font_description !proof_tree_font_desc;
+- 	let l = drawable#pango_context#create_layout
+- 	in
+- 	layout <- Some l;
+- 	l
+-       | Some l -> l
+- 
+    (** Update fonts, sizes and layout after the configuration has been
+        changed.
+    *)
+    method configuration_updated =
+!     layout <- None;
+      super#configuration_updated
+  
+                                           (***************** inside turnstile *)
+--- 1473,1484 ----
+      List.iter (fun ew -> ew#update_content sequent_text_history)
+        external_windows
+  
+    (** Update fonts, sizes and layout after the configuration has been
+        changed.
+    *)
+    method configuration_updated =
+!     self#set_displayed_seq_text;
+!     layout <- make_layout drawable_arg#pango_context;
+      super#configuration_updated
+  
+                                           (***************** inside turnstile *)
+***************
+*** 1346,1376 ****
+        coordinates.
+    *)
+    method private draw_turnstile x y =
+!     let radius = !current_config.turnstile_radius in
+!     if branch_state = CurrentNode
+!     then
+!       drawable#arc ~x:(x - radius) ~y:(y - radius) 
+! 	~width:(2 * radius) ~height:(2 * radius) ();
+      (if selected 
+       then
+! 	let wh_2 = radius + !current_config.turnstile_line_width in
+! 	drawable#rectangle 
+! 	  ~x:(x - wh_2) ~y:(y - wh_2) ~width:(2 * wh_2) ~height:(2 * wh_2) ();
+!     );
+!     drawable#line 
+!       ~x:(x + !current_config.turnstile_left_bar_x_offset)
+!       ~y:(y - !current_config.turnstile_left_bar_y_offset)
+!       ~x:(x + !current_config.turnstile_left_bar_x_offset)
+!       ~y:(y + !current_config.turnstile_left_bar_y_offset);
+!     drawable#line
+!       ~x:(x + !current_config.turnstile_left_bar_x_offset)
+!       ~y
+!       ~x:(x + !current_config.turnstile_horiz_bar_x_offset)
+!       ~y;
+      (match external_windows with
+        | [] -> ()
+        | win::_ ->
+- 	let layout = self#get_layout in
+  	Pango.Layout.set_text layout win#window_number;
+  	let (w, h) = Pango.Layout.get_pixel_size layout in
+  	drawable#put_layout 
+--- 1486,1507 ----
+        coordinates.
+    *)
+    method private draw_turnstile x y =
+!     let (w, h) = Pango.Layout.get_pixel_size layout in
+!     let y' = y + !current_config.turnstile_left_bar_y_offset in
+!     let x_min = x - (w / 2) in
+!     let x_max = x + (w / 2) in
+!     drawable#put_layout ~x:x_min ~y:y' layout;
+      (if selected 
+       then
+!        drawable#rectangle 
+! 	 ~x:x_min ~y:(y' - 2) ~width:w ~height:(h - 4 + 5) ();
+!     )
+!     ;
+!     text_begin_point <- x_min;
+!     text_end_point <- x_max;
+      (match external_windows with
+        | [] -> ()
+        | win::_ ->
+  	Pango.Layout.set_text layout win#window_number;
+  	let (w, h) = Pango.Layout.get_pixel_size layout in
+  	drawable#put_layout 
+***************
+*** 1406,1421 ****
+        
+    (** Set width and height of this node. *)
+    method private set_node_size =
+!     width <- 
+!       2 * !current_config.turnstile_radius +
+!       2 * !current_config.turnstile_line_width +
+!       !current_config.subtree_sep;
+!     height <- 
+!       2 * !current_config.turnstile_radius +
+!       2 * !current_config.turnstile_line_width
+  
+                                           (***************** inside turnstile *)
+    initializer
+      self#set_node_size;
+      (* 
+       * Printf.fprintf (debugc()) "INIT %s width %d height %d\n%!"
+--- 1537,1555 ----
+        
+    (** Set width and height of this node. *)
+    method private set_node_size =
+!     (* --- render_turnstile --- *)
+!     Pango.Layout.set_text layout (self#abbreviated_seq_text displayed_seq_text);
+!     let (w, h) = Pango.Layout.get_pixel_size layout in
+!     layout_width <- w;
+!     layout_height <- h;
+!     width <- w + !current_config.subtree_sep (* "Node padding" *)
+!              + !current_config.proof_tree_sep (* "Tree padding" *)
+!     ;
+!     height <- h;
+  
+                                           (***************** inside turnstile *)
+    initializer
++     self#set_displayed_seq_text;
+      self#set_node_size;
+      (* 
+       * Printf.fprintf (debugc()) "INIT %s width %d height %d\n%!"
+***************
+*** 1438,1453 ****
+  (*****************************************************************************)
+  (*****************************************************************************)
+  
+- (** Create a new layout with fonts from the current configuration.
+-     This function exists, because (I)
+-     Pango.Layout.set_font_description is missing in Debian Squeeze and
+-     (II) one cannot call a method in the initializer of the instance
+-     variable layout.
+- *)
+- let make_layout context =
+-   context#set_font_description !proof_tree_font_desc;
+-   context#create_layout
+- 
+  (** Specific element class for proof commands. This class specializes
+      the generic and abstract {!proof_tree_element} for proof-command
+      nodes.
+--- 1572,1577 ----
+***************
+*** 1485,1497 ****
+     *)
+    (** The pango layout for rendering the proof command text. *)
+    val mutable layout = make_layout drawable_arg#pango_context
+- 
+-   (** Width (in pixels) of the rendered proof command text. *)
+-   val mutable layout_width = 0
+- 
+-   (** Height (in pixels) of the rendered proof command text. *)
+-   val mutable layout_height = 0
+- 
+                                (***************** inside proof_command_length *)
+    (** This is a [Proof_command] element, see {!node_kind}. *)
+    method node_kind = Proof_command
+--- 1609,1614 ----
+***************
+*** 1512,1517 ****
+--- 1629,1635 ----
+  
+    (** Render the proof command in the pango layout. *)
+    method private render_proof_command =
++     let displayed_command = self#abbreviated_command displayed_command in
+      let layout_text = 
+        match external_windows with
+  	| [] -> displayed_command
+***************
+*** 1527,1532 ****
+--- 1645,1653 ----
+        the configuration has been changed.
+    *)
+    method private set_displayed_command =
++     let command = Str.global_replace (Str.regexp " +") " "
++                     (Str.global_replace (Str.regexp "\n") " "
++                        (Traf_aux.rewrite_symbols self#content)) in
+      if Util.utf8_string_length command <= !current_config.proof_command_length
+      then begin
+        content_shortened <- false;
+***************
+*** 1541,1546 ****
+--- 1662,1683 ----
+              ^ "\226\128\166" 			(* append horizontal ellipsis *)
+      end
+  
++   method private abbreviated_command displayed_command =
++     let one_line_text = displayed_command in
++     let abbr_text = Str.replace_first
++                       (Str.regexp "\\([_A-Za-z'0-9]+\\)[^_A-Za-z'0-9].*") ("\\1")
++                       one_line_text in
++     if self#abbrev_flag then 
++       abbr_text
++     else if !Traf_aux.show_current_only_flag then
++       match self#branch_state with
++       | Proven -> abbr_text
++       | Unproven -> abbr_text
++       | Current -> one_line_text
++       | CurrentNode -> one_line_text
++       | Cheated -> abbr_text
++     else one_line_text
++ 
+    (** Set {!proof_tree_element.width} and {!proof_tree_element.height}
+        after rendering the proof command.
+    *)
+***************
+*** 1555,1560 ****
+--- 1692,1698 ----
+    method configuration_updated =
+      self#set_displayed_command;
+      layout <- make_layout drawable_arg#pango_context;
++     self#set_node_size;
+      super#configuration_updated
+  
+                                (***************** inside proof_command_length *)
+***************
+*** 1601,1613 ****
+  	~width:w ~height:h ~filled:true ();
+        restore_gc drawable gc
+      end;
+!     drawable#put_layout ~x:(x - layout_width/2) ~y:(y - layout_height/2) layout;
+      if selected 
+      then
+        let w = layout_width + !current_config.turnstile_line_width in
+        let h = layout_height + !current_config.turnstile_line_width in
+        drawable#rectangle 
+! 	~x:(x - w/2) ~y:(y - h/2) ~width:w ~height:h ();
+  
+                                (***************** inside proof_command_length *)
+    (** Compute the line offsets for proof-command nodes, see
+--- 1739,1772 ----
+  	~width:w ~height:h ~filled:true ();
+        restore_gc drawable gc
+      end;
+!     (*---- draw_proof_command ------------------------*)
+!     let parent_ts = match parent with
+!       | None -> assert false
+!       | Some p -> p
+!     in
+!     let ypo = y + !current_config.turnstile_left_bar_y_offset in
+!     let ptsw = parent_ts#layout_width in
+!     let (s, e) = (x - (ptsw / 2), x + (ptsw / 2)) in
+!     let (x_min, x_max) =
+!       self#iter_children 
+!         left 0 (s, e) (* y is not used *)
+!         (fun left y (x_min, x_max) ts ->
+!           let cx = ts#get_x_coordinate left in
+!           let cw = ts#layout_width in
+!           ((min x_min (cx - (cw / 2)), max x_max (cx + (cw / 2))), true))
+!     in
+!     let y' = ypo + layout_height / 2
+!     in
+!     text_begin_point <- x_max;
+!     text_end_point <- x_max + layout_width;
+!     drawable#line ~x:x_min ~y:y' ~x:x_max ~y:y'; (* draw_line *)
+!     drawable#put_layout ~x:x_max ~y:ypo layout;
+      if selected 
+      then
+        let w = layout_width + !current_config.turnstile_line_width in
+        let h = layout_height + !current_config.turnstile_line_width in
+        drawable#rectangle 
+! 	~x:x_max ~y:(ypo - 2) ~width:w ~height:(h + 5) ();
+  
+                                (***************** inside proof_command_length *)
+    (** Compute the line offsets for proof-command nodes, see
+***************
+*** 1615,1621 ****
+    *)
+    method line_offset slope = 
+      let sign = if slope >= 0.0 then 1 else -1 in
+!     let line_sep = !current_config.line_sep in
+      let corner_slope = (float_of_int width) /. (float_of_int height) in
+      (* slope and corner_slope are actually inverse slopes: 
+       * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
+--- 1774,1781 ----
+    *)
+    method line_offset slope = 
+      let sign = if slope >= 0.0 then 1 else -1 in
+!     (* let line_sep = !current_config.line_sep in *)
+!     let line_sep = !current_config.level_distance in
+      let corner_slope = (float_of_int width) /. (float_of_int height) in
+      (* slope and corner_slope are actually inverse slopes: 
+       * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
+***************
+*** 1629,1634 ****
+--- 1789,1815 ----
+        ((width/2 + line_sep) * sign,
+         int_of_float(float_of_int(width/2 + line_sep) /. slope +. 0.5) * sign)
+  
++   (** Return the "displayed" proof command. *)
++   method displayed_content = 
++     let one_line = Str.global_replace (Str.regexp " +") " "
++                      (Str.global_replace (Str.regexp "\n") " " self#content) in
++     self#abbreviated_command one_line
++ 
++   method assumptions = []
++ 
++   method displayed_text_pre =
++     let content_str = Traf_aux.rewrite_symbols self#content in
++     let str = 
++       content_str
++       ^ (if !current_config.debug_mode
++          then
++            "\n\n"
++            ^ "width : " ^ (string_of_int self#width)
++            ^ "\n"
++            ^ "layout_width : " ^ (string_of_int self#layout_width)
++          else "") in
++     str
++ 
+    initializer
+      self#set_displayed_command;
+      self#set_node_size;
+diff -c prooftree-0.13/emacs_commands.ml traf-0.1/emacs_commands.ml
+*** prooftree-0.13/emacs_commands.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/emacs_commands.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 53,61 ****
+  
+  (** Send an undo command to emacs. *)
+  let emacs_callback_undo undo_state =
+!   emacs_callback (Printf.sprintf "undo %d" undo_state)
+  
+  
+  (** Send a piece of proof script to Proof General. *)
+  let emacs_send_proof_script script =
+!   emacs_long_callback "insert-proof-script" script
+--- 53,82 ----
+  
+  (** Send an undo command to emacs. *)
+  let emacs_callback_undo undo_state =
+!   emacs_callback (Printf.sprintf "undo-to %d" undo_state)
+  
+  
+  (** Send a piece of proof script to Proof General. *)
+  let emacs_send_proof_script script =
+!   emacs_long_callback "insert-proof-script" (" " ^ script ^ " ")
+! 
+! (** Send a delete last tactic in buffer. *)
+! let emacs_callback_delete_word () =
+!   emacs_callback "delete-word"
+! 
+! (** Send a process the next proof command in buffer. *)
+! let emacs_callback_process_next_command () =
+!   emacs_callback "process-next-proof"
+! 
+! (** Send a process undo previous proof command in buffer. *)
+! let emacs_callback_undo_previous_command () =
+!   emacs_callback "undo-previous-command"
+! 
+! (** Send a process the delete last inserted command. *)
+! let emacs_callback_delete_last_inserted_command () =
+!   emacs_callback "delete-last-inserted-command"
+!                  
+! (** Send a piece of proof script in current goals. *)
+! let emacs_send_proof_script_in_current_goals script =
+!   emacs_long_callback "insert-proof-script-in-current-goals" script
+!     
+diff -c prooftree-0.13/input.ml traf-0.1/input.ml
+*** prooftree-0.13/input.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/input.ml	2018-04-23 00:30:16.000000000 +0900
+***************
+*** 420,434 ****
+    (* Printf.fprintf (debugc()) "GS cont %d - %d enter\n%!" i len; *)
+    current_parser := (get_string_cont s i len continuation_fn);
+    let n = local_input s i (len - i) in
+!   (* 
+!    * Printf.fprintf (debugc()) "GS read %d bytes: %s\n%!" 
+!    *   n (String.sub s i n);
+!    *)
+    let i = i + n in
+    if i = len
+    then begin
+!     (* Printf.fprintf (debugc()) "GS %d yields %s\n%!" len s; *)
+!     continuation_fn (Bytes.to_string s)
+    end
+    else get_string_cont s i len continuation_fn ()
+  
+--- 420,435 ----
+    (* Printf.fprintf (debugc()) "GS cont %d - %d enter\n%!" i len; *)
+    current_parser := (get_string_cont s i len continuation_fn);
+    let n = local_input s i (len - i) in
+! (*
+!   Printf.fprintf (debugc())
+!     "[GS cont] read %d bytes, chopped -> \"%s\"\n%!" n (String.sub s i (n-1));
+!  *)
+    let i = i + n in
+    if i = len
+    then begin
+!     (* Printf.fprintf (debugc()) "[GS cont] %d yields %s\n%!" len s;*)
+!     Traf_aux.save_sequent_text_or_existential_info (Bytes.to_string s);
+!     continuation_fn s
+    end
+    else get_string_cont s i len continuation_fn ()
+  
+***************
+*** 442,449 ****
+  
+      @raise Sys_blocked_io when not enough input is available currently
+  *)
+! let get_string len continuation_fn =
+    (* Printf.fprintf (debugc()) "GS %d enter\n%!" len; *)
+    let s = Bytes.create len in
+    get_string_cont s 0 len continuation_fn ()
+  
+--- 443,451 ----
+  
+      @raise Sys_blocked_io when not enough input is available currently
+  *)
+! let get_string len continuation_fn tag =
+    (* Printf.fprintf (debugc()) "GS %d enter\n%!" len; *)
++   Traf_aux.save_parsing_state tag;
+    let s = Bytes.create len in
+    get_string_cont s 0 len continuation_fn ()
+  
+***************
+*** 535,540 ****
+--- 537,545 ----
+      layer_string proof_name proof_command current_sequent_text 
+      additional_ids_string existentials_string =
+    (* Printf.fprintf (debugc()) "PCGF\n%!"; *)
++ (*
++   Printf.fprintf (Util.debugc()) "[PCGF] existentials_string=<%s>\n%!" existentials_string;
++  *)
+    let cheated_flag = match cheated_string with
+      | "not-cheated" -> false
+      | "cheated" -> true
+***************
+*** 555,568 ****
+    in
+    let proof_name = chop_final_newlines proof_name in
+    let proof_command = chop_final_newlines proof_command in
+!   let current_sequent_text = chop_final_newlines current_sequent_text in
+    let additional_ids_string = chop_final_newlines additional_ids_string in
+    let additional_ids = string_split ' ' additional_ids_string in
+    let existentials_string = chop_final_newlines existentials_string in
+    let (ex_uninst, ex_inst) = !parse_existential_info existentials_string in
+    Proof_tree.process_current_goals state proof_name proof_command cheated_flag
+!     layer_flag current_sequent_id current_sequent_text additional_ids 
+!     ex_uninst ex_inst;
+    current_parser := !message_start_parser
+  
+      
+--- 560,575 ----
+    in
+    let proof_name = chop_final_newlines proof_name in
+    let proof_command = chop_final_newlines proof_command in
+!   (*let current_sequent_text = chop_final_newlines current_sequent_text in*)
+    let additional_ids_string = chop_final_newlines additional_ids_string in
+    let additional_ids = string_split ' ' additional_ids_string in
+    let existentials_string = chop_final_newlines existentials_string in
+    let (ex_uninst, ex_inst) = !parse_existential_info existentials_string in
+    Proof_tree.process_current_goals state proof_name proof_command cheated_flag
+!     layer_flag current_sequent_id (*current_sequent_text*)
+!     (Traf_aux.mold_subgoal !Traf_aux.sequent_string)
+!     additional_ids ex_uninst ex_inst
+!     (Traf_aux.mold_assumption !Traf_aux.sequent_string);
+    current_parser := !message_start_parser
+  
+      
+***************
+*** 602,609 ****
+  			  (fun existentials_string ->
+  			    parse_current_goals_finish state current_sequent_id
+  			      cheated_string layer_string
+  			      proof_name proof_command current_sequent_text
+! 			      additional_ids_string existentials_string))))))
+  
+  
+  
+--- 609,619 ----
+  			  (fun existentials_string ->
+  			    parse_current_goals_finish state current_sequent_id
+  			      cheated_string layer_string
++ (*
+  			      proof_name proof_command current_sequent_text
+! *)
+! 			      (Bytes.to_string proof_name) (Bytes.to_string proof_command) (Bytes.to_string current_sequent_text)
+! 			      (Bytes.to_string additional_ids_string) (Bytes.to_string existentials_string))"existential")"additional_id")"sequent_text")"command") "proof_name")
+  
+  
+  
+***************
+*** 628,635 ****
+  *)
+  let parse_update_sequent_finish state sequent_id proof_name sequent_text =
+    let proof_name = chop_final_newlines proof_name in
+!   let sequent_text = chop_final_newlines sequent_text in
+!   Proof_tree.update_sequent state proof_name sequent_id sequent_text;
+    current_parser := !message_start_parser
+  
+  
+--- 638,646 ----
+  *)
+  let parse_update_sequent_finish state sequent_id proof_name sequent_text =
+    let proof_name = chop_final_newlines proof_name in
+!   Proof_tree.update_sequent state proof_name sequent_id (*sequent_text*)
+!            (Traf_aux.mold_subgoal !Traf_aux.sequent_string)
+!            (Traf_aux.mold_assumption !Traf_aux.sequent_string);
+    current_parser := !message_start_parser
+  
+  
+***************
+*** 649,655 ****
+  	  get_string sequent_text_bytes
+  	    (fun sequent_text ->
+  	      parse_update_sequent_finish state sequent_id 
+! 		proof_name sequent_text)))
+  
+  
+  
+--- 660,666 ----
+  	  get_string sequent_text_bytes
+  	    (fun sequent_text ->
+  	      parse_update_sequent_finish state sequent_id 
+! 		(Bytes.to_string proof_name) sequent_text) "sequent_text") "proof_name")
+  
+  
+  
+***************
+*** 686,692 ****
+      (fun state new_current_id proof_name_bytes ->
+        get_string proof_name_bytes
+  	(fun proof_name ->
+! 	  parse_switch_goal_finish state new_current_id proof_name))
+  
+  
+  
+--- 697,703 ----
+      (fun state new_current_id proof_name_bytes ->
+        get_string proof_name_bytes
+  	(fun proof_name ->
+! 	  parse_switch_goal_finish state new_current_id (Bytes.to_string proof_name))"proof_name")
+  
+  
+  
+***************
+*** 712,717 ****
+--- 723,731 ----
+  *)
+  let parse_branch_finished_finish 
+      state cheated_string proof_name proof_command existentials_string =
++ (*
++   Printf.fprintf (Util.debugc()) "[PBFF] existentials_string=<%s>\n%!" existentials_string;
++  *)
+    let cheated_flag = match cheated_string with
+      | "not-cheated" -> false
+      | "cheated" -> true
+***************
+*** 748,755 ****
+  	      get_string existential_bytes
+  		(fun existentials_string ->
+  		  parse_branch_finished_finish 
+! 		    state cheated_string proof_name 
+! 		    proof_command existentials_string))))
+  
+  
+  
+--- 762,769 ----
+  	      get_string existential_bytes
+  		(fun existentials_string ->
+  		  parse_branch_finished_finish 
+! 		    state cheated_string (Bytes.to_string proof_name)
+! 		    (Bytes.to_string proof_command) (Bytes.to_string existentials_string))"existential")"command")"proof_name")
+  
+  
+  
+***************
+*** 771,779 ****
+      (fun state proof_name_bytes ->
+        get_string proof_name_bytes 
+  	(fun proof_name ->
+! 	  let proof_name = chop_final_newlines proof_name in
+  	  Proof_tree.process_proof_complete state proof_name;
+! 	  current_parser := !message_start_parser))
+  
+  
+  (******************************************************************************
+--- 785,793 ----
+      (fun state proof_name_bytes ->
+        get_string proof_name_bytes 
+  	(fun proof_name ->
+! 	  let proof_name = chop_final_newlines (Bytes.to_string proof_name) in
+  	  Proof_tree.process_proof_complete state proof_name;
+! 	  current_parser := !message_start_parser) "proof_name")
+  
+  
+  (******************************************************************************
+***************
+*** 805,810 ****
+--- 819,825 ----
+      @param proof_name full proof name (as raw data section string)
+  *)
+  let parse_quit_proof_finish proof_name =
++   let proof_name = Bytes.to_string proof_name in
+    let proof_name = chop_final_newlines proof_name in
+    Proof_tree.quit_proof proof_name;
+    current_parser := !message_start_parser
+***************
+*** 819,825 ****
+    check_if_configured ();
+    Scanf.bscanf com_buf " proof-name-bytes %d"
+      (fun proof_name_bytes ->
+!       get_string proof_name_bytes parse_quit_proof_finish)
+  
+  
+  
+--- 834,840 ----
+    check_if_configured ();
+    Scanf.bscanf com_buf " proof-name-bytes %d"
+      (fun proof_name_bytes ->
+!       get_string proof_name_bytes parse_quit_proof_finish "proof_name")
+  
+  
+  
+***************
+*** 839,844 ****
+--- 854,860 ----
+      @raise Sys_blocked_io if parsing gets interrupted
+  *)
+  let parse_command command =
++   let command = Bytes.to_string command in
+    (* Printf.fprintf (debugc()) "PC %s\n%!" command; *)
+    let com_buf = Scanf.Scanning.from_string command in
+    Scanf.bscanf com_buf "%s " 
+***************
+*** 866,875 ****
+      @raise Sys_blocked_io if parsing gets interrupted
+  *)
+  let read_second_line first_line =
+    Scanf.sscanf first_line "second line %3d\n"
+      (fun second_line_len ->
+        (* Printf.fprintf (debugc()) "second line cont %d\n%!" second_line_len; *)
+!       get_string second_line_len parse_command)
+  
+  
+  (** Read the first, fixed-length line of a display command and switch
+--- 882,892 ----
+      @raise Sys_blocked_io if parsing gets interrupted
+  *)
+  let read_second_line first_line =
++   let first_line = Bytes.to_string first_line in
+    Scanf.sscanf first_line "second line %3d\n"
+      (fun second_line_len ->
+        (* Printf.fprintf (debugc()) "second line cont %d\n%!" second_line_len; *)
+!       get_string second_line_len parse_command "second_line")
+  
+  
+  (** Read the first, fixed-length line of a display command and switch
+***************
+*** 889,895 ****
+     *)
+    (* Printf.fprintf (debugc()) "message start\n%!"; *)
+    try
+!     get_string 16 read_second_line
+    with
+      | Scanf.Scan_failure _
+      | Failure _ 
+--- 906,912 ----
+     *)
+    (* Printf.fprintf (debugc()) "message start\n%!"; *)
+    try
+!     get_string 16 read_second_line "message_start"
+    with
+      | Scanf.Scan_failure _
+      | Failure _ 
+diff -c prooftree-0.13/proof_tree.ml traf-0.1/proof_tree.ml
+*** prooftree-0.13/proof_tree.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/proof_tree.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 301,306 ****
+--- 301,375 ----
+  *)
+  let current_proof_tree = ref None
+  
++ let current_dummy_id = ref 1000
++ 
++ 
++ (** Find a discharged node that corresponds to the "used assumption for the step." *)
++ let find_discharged_node pt state proof_command parent =
++ 
++   let proof_command = Str.global_replace (Str.regexp " *\n *") " " proof_command in
++ 
++   let new_dis_node tag a_p =
++     let tmpid = !current_dummy_id in
++     current_dummy_id := tmpid + 1;
++     let dis_node =
++       pt.window#new_turnstile state (string_of_int tmpid) 
++         (Some ("[" ^ tag ^ " : " ^ a_p ^ "]")) in
++     dis_node#mark_proved;
++     Hashtbl.add pt.sequent_hash (string_of_int tmpid) dis_node;
++     let dis_node = (dis_node :> proof_tree_element) in  
++     Some dis_node
++   in
++   let prepare_dis_node tag =
++     let assumed_proposition =
++       Traf_aux.search_assumption_by_tag tag parent#assumptions
++     in
++     match assumed_proposition with
++     | None -> None
++     | Some a_p -> new_dis_node tag a_p
++   in
++   let prepare_discharged_node (tactic : string) =
++     let r = Str.regexp ("^\\( *by\\)? *" ^ tactic ^ " *\\(->\\|<-\\|-\\|:\\|\\/\\)? *\\((\\)?\\([A-Za-z'0-9_]+\\).*") in
++     let tag = Str.replace_first r "\\4" proof_command in
++ 
++     Printf.fprintf (Util.debugc()) "[FDC] %s : tag=<%s>\n" tactic tag;
++     prepare_dis_node tag
++   in
++   let discharged_node =
++     let check_tactic tactic f cont =
++       try ignore (Str.search_forward (Str.regexp ("^\\( *by\\)? *" ^ tactic ^ "\\b")) proof_command 0);
++           f tactic
++       with Not_found -> cont ()
++     in
++     let assm_fun parent new_dis_node = 
++       (fun _ ->
++         (* find out an assumption whose entity is the same as the previous goal *)
++         Printf.fprintf (Util.debugc()) "[FDC assumption] last goal : <%s>\n" parent#content;
++         let assumed_proposition = 
++           Traf_aux.search_assumption_by_entity parent#content parent#assumptions
++         in      
++         match assumed_proposition with
++         | None -> None
++         | Some (tag, a_p) -> new_dis_node tag a_p
++       ) in
++     let f = prepare_discharged_node in
++     check_tactic "case" f (fun () -> 
++     check_tactic "move" f (fun () -> 
++     check_tactic "eapply" f (fun () -> 
++     check_tactic "apply" f (fun () -> 
++     check_tactic "inversion" f (fun () ->
++     check_tactic "induction" f (fun () ->
++     check_tactic "destruct" f (fun () ->
++     check_tactic "rewrite" f (fun () ->
++     check_tactic "elim" f (fun () ->
++     check_tactic "replace" f (fun () ->
++     check_tactic "done" (assm_fun parent new_dis_node) (fun () ->
++     check_tactic "trivial" (assm_fun parent new_dis_node) (fun () ->
++     check_tactic "assumption" (assm_fun parent new_dis_node) (fun () ->
++         None)))))))))))))
++ 
++   in discharged_node
++ 
+  
+  (** Closes the proof tree [pt] by leaving the current branch open.
+      Additionally clear {!current_proof_tree}.
+***************
+*** 531,537 ****
+      a warning is displayed, if there are more than 1 root nodes.
+  *)
+  let create_new_layer pt state current_sequent_id current_sequent_text
+!     additional_ids uninstantiated_existentials instantiated_ex_deps =
+    assert(List.for_all (fun id -> Hashtbl.mem pt.sequent_hash id = false)
+  	   (current_sequent_id :: additional_ids));
+    assert(pt.open_goals_count = 0);
+--- 600,606 ----
+      a warning is displayed, if there are more than 1 root nodes.
+  *)
+  let create_new_layer pt state current_sequent_id current_sequent_text
+!     additional_ids uninstantiated_existentials instantiated_ex_deps a_list =
+    assert(List.for_all (fun id -> Hashtbl.mem pt.sequent_hash id = false)
+  	   (current_sequent_id :: additional_ids));
+    assert(pt.open_goals_count = 0);
+***************
+*** 543,548 ****
+--- 612,618 ----
+    let first_sw = 
+      pt.window#new_turnstile state current_sequent_id 
+        (Some current_sequent_text) in
++   first_sw#update_assumption a_list; (* for initialization *)
+    Hashtbl.add pt.sequent_hash current_sequent_id first_sw;
+    let first_sw = (first_sw :> proof_tree_element) in
+    let other_sw =
+***************
+*** 608,614 ****
+  *)
+  let add_new_goal pt state proof_command cheated_flag current_sequent_id
+      current_sequent_text additional_ids 
+!     uninstantiated_existentials instantiated_ex_deps =
+    assert(cheated_flag = false);
+    let (ex_got_instantiated, new_existentials) =
+      update_existentials pt.existential_hash
+--- 678,684 ----
+  *)
+  let add_new_goal pt state proof_command cheated_flag current_sequent_id
+      current_sequent_text additional_ids 
+!     uninstantiated_existentials instantiated_ex_deps a_list =
+    assert(cheated_flag = false);
+    let (ex_got_instantiated, new_existentials) =
+      update_existentials pt.existential_hash
+***************
+*** 629,639 ****
+    in
+    let pc = (pc :> proof_tree_element) in
+    set_children parent [pc];
+    let sw =
+      pt.window#new_turnstile state current_sequent_id 
+        (Some current_sequent_text) in
+    Hashtbl.add pt.sequent_hash current_sequent_id sw;
+!   let sw = (sw :> proof_tree_element) in
+    let new_goal_ids_rev = 
+      list_filter_rev 
+        (fun id -> not (Hashtbl.mem pt.sequent_hash id))
+--- 699,716 ----
+    in
+    let pc = (pc :> proof_tree_element) in
+    set_children parent [pc];
++ 
++   (* prepare turnstile nodes with assumptions *)
++   let discharged_node = find_discharged_node pt state proof_command parent
++   in 
++   (* create a new turnstile node for sequents *)
+    let sw =
+      pt.window#new_turnstile state current_sequent_id 
+        (Some current_sequent_text) in
++   sw#update_assumption a_list;
+    Hashtbl.add pt.sequent_hash current_sequent_id sw;
+! 
+!   let pte = (sw :> proof_tree_element) in
+    let new_goal_ids_rev = 
+      list_filter_rev 
+        (fun id -> not (Hashtbl.mem pt.sequent_hash id))
+***************
+*** 641,650 ****
+    let new_goals =
+      List.fold_left
+        (fun res id ->
+! 	let sw = pt.window#new_turnstile state id None in
+! 	Hashtbl.add pt.sequent_hash id sw;
+! 	let sw = (sw :> proof_tree_element) in
+! 	sw :: res)
+        [] new_goal_ids_rev
+    in
+    let position_hints = match new_goals with
+--- 718,727 ----
+    let new_goals =
+      List.fold_left
+        (fun res id ->
+! 	let sw' = pt.window#new_turnstile state id None in
+! 	Hashtbl.add pt.sequent_hash id sw';
+! 	let pte' = (sw' :> proof_tree_element) in
+! 	pte' :: res)
+        [] new_goal_ids_rev
+    in
+    let position_hints = match new_goals with
+***************
+*** 654,670 ****
+        let last = list_last rest in
+        [[last; pc]; [snd; pc]; [snd]; [pc]]
+    in
+!   let all_subgoals = sw :: new_goals in
+    set_children pc all_subgoals;
+    let unhash_sequent_ids = current_sequent_id :: new_goal_ids_rev in
+    let old_current_sequent_id = pt.current_sequent_id in
+    let old_current_sequent = parent in
+    let old_open_goals_count = pt.open_goals_count in
+    pt.current_sequent_id <- Some current_sequent_id;
+!   pt.current_sequent <- Some sw;
+    pt.open_goals_count <- pt.open_goals_count + List.length new_goals;
+    sw#mark_current;
+!   set_current_node_wrapper pt (Some sw);
+    pt.window#set_position_hints position_hints;
+    (* The uninstantiated existentials are displayed together with the
+     * sequent. Therefore, if some existential got instantiated we have
+--- 731,751 ----
+        let last = list_last rest in
+        [[last; pc]; [snd; pc]; [snd]; [pc]]
+    in
+!   (* let all_subgoals = sw :: new_goals in  *)
+!   let all_subgoals = match discharged_node with
+!     | Some dis_node -> dis_node :: pte :: new_goals
+!     | _ -> pte :: new_goals
+!   in
+    set_children pc all_subgoals;
+    let unhash_sequent_ids = current_sequent_id :: new_goal_ids_rev in
+    let old_current_sequent_id = pt.current_sequent_id in
+    let old_current_sequent = parent in
+    let old_open_goals_count = pt.open_goals_count in
+    pt.current_sequent_id <- Some current_sequent_id;
+!   pt.current_sequent <- Some pte;
+    pt.open_goals_count <- pt.open_goals_count + List.length new_goals;
+    sw#mark_current;
+!   set_current_node_wrapper pt (Some pte);
+    pt.window#set_position_hints position_hints;
+    (* The uninstantiated existentials are displayed together with the
+     * sequent. Therefore, if some existential got instantiated we have
+***************
+*** 734,739 ****
+--- 815,829 ----
+    let pc = (pc :> proof_tree_element) in
+    parent#unmark_current;
+    set_children parent [pc];
++ 
++   let additional_node = find_discharged_node pt state proof_command parent
++   in begin
++       match additional_node with
++       | Some dis_node -> set_children pc [dis_node]
++       | None -> ()
++     end
++    ;
++ 
+    if cheated_flag 
+    then pc#mark_cheated
+    else pc#mark_proved;
+***************
+*** 784,789 ****
+--- 874,898 ----
+      Hashtbl.find pt.sequent_hash new_current_sequent_id 
+    in
+    let new_current_sequent = (new_current_sequent :> proof_tree_element) in
++   if new_current_sequent#branch_state = CurrentNode
++   then begin
++       (* CurrentNode must have been found in process_branch_finished
++          --- when bullets are used *)
++       let undo () =
++         (* do not perform unmark_current *)
++         pt.current_sequent_id <- None;
++         pt.current_sequent <- None;
++       in
++       (* no need to perform mark_current *)
++       set_current_node_wrapper pt (Some new_current_sequent);
++       pt.current_sequent_id <- Some new_current_sequent_id;
++       pt.current_sequent <- Some new_current_sequent;
++       pt.window#clear_position_hints;
++       add_undo_action pt state undo;
++       pt.need_redraw <- true
++     end
++   else begin
++ 
+    let undo () =
+      new_current_sequent#unmark_current;
+      pt.current_sequent_id <- None;
+***************
+*** 797,802 ****
+--- 906,912 ----
+    add_undo_action pt state undo;
+    pt.need_redraw <- true
+  
++   end
+  
+  (** Finish the current branch with [proof_command] and switch to
+      [current_sequent] as next current sequent.
+***************
+*** 824,830 ****
+  (* See mli for doc *)
+  let process_current_goals state proof_name proof_command cheated_flag
+      layer_flag current_sequent_id current_sequent_text additional_ids 
+!     uninstatiated_existentials instantiated_ex_deps =
+    (match !current_proof_tree with
+      | Some pt -> 
+        if pt.proof_name <> proof_name 
+--- 934,940 ----
+  (* See mli for doc *)
+  let process_current_goals state proof_name proof_command cheated_flag
+      layer_flag current_sequent_id current_sequent_text additional_ids 
+!     uninstatiated_existentials instantiated_ex_deps a_list =
+    (match !current_proof_tree with
+      | Some pt -> 
+        if pt.proof_name <> proof_name 
+***************
+*** 842,848 ****
+    then begin
+      assert (cheated_flag = false);
+      create_new_layer pt state current_sequent_id current_sequent_text
+!       additional_ids uninstatiated_existentials instantiated_ex_deps
+    end else
+      if pt.current_sequent_id <> (Some current_sequent_id) &&
+        Hashtbl.mem pt.sequent_hash current_sequent_id
+--- 952,958 ----
+    then begin
+      assert (cheated_flag = false);
+      create_new_layer pt state current_sequent_id current_sequent_text
+!       additional_ids uninstatiated_existentials instantiated_ex_deps a_list
+    end else
+      if pt.current_sequent_id <> (Some current_sequent_id) &&
+        Hashtbl.mem pt.sequent_hash current_sequent_id
+***************
+*** 853,878 ****
+      else
+        add_new_goal pt state proof_command cheated_flag current_sequent_id 
+  	current_sequent_text additional_ids 
+! 	uninstatiated_existentials instantiated_ex_deps
+  
+  
+  (** Udate the sequent text for some sequent text and set an
+      appropriate undo action.
+  *)
+! let update_sequent_element pt state sw sequent_text =
+!   sw#update_sequent sequent_text;
+!   if sw#is_selected then 
+!     pt.sequent_area_needs_refresh <- true;
+    let undo () =
+!     sw#undo_update_sequent;
+!     if sw#is_selected then 
+!       pt.sequent_area_needs_refresh <- true
+    in
+    add_undo_action pt state undo  
+  
+  
+  (* See mli for doc *)
+! let update_sequent state proof_name sequent_id sequent_text =
+    match !current_proof_tree with
+      | None ->
+        raise (Proof_tree_error "Update sequent without current proof tree")
+--- 963,998 ----
+      else
+        add_new_goal pt state proof_command cheated_flag current_sequent_id 
+  	current_sequent_text additional_ids 
+! 	uninstatiated_existentials instantiated_ex_deps a_list
+! 	
+! 	
+! (** Update the sequent text for some sequent. This function is used
+!     for both, setting the new sequent text as well as reseting to the
+!     old sequent text in the undo action. 
+! *)
+! let change_sequent_text pt sequent text a_list () =
+!   sequent#update_assumption a_list;
+!   sequent#update_sequent text;
+!   (* need redraw for sequent_text of other_sw *)
+!   pt.need_redraw <- true;
+!   if sequent#is_selected then 
+!     pt.sequent_area_needs_refresh <- true
+  
+  
+  (** Udate the sequent text for some sequent text and set an
+      appropriate undo action.
+  *)
+! let update_sequent_element pt state sw sequent_text a_list =
+!   let old_sequent_text = sw#content in
+!   change_sequent_text pt sw sequent_text a_list ();
+    let undo () =
+!     change_sequent_text pt sw old_sequent_text a_list ()
+    in
+    add_undo_action pt state undo  
+  
+  
+  (* See mli for doc *)
+! let update_sequent state proof_name sequent_id sequent_text a_list =
+    match !current_proof_tree with
+      | None ->
+        raise (Proof_tree_error "Update sequent without current proof tree")
+***************
+*** 881,887 ****
+        then raise (Proof_tree_error "Update sequent on other non-current proof");
+        try
+  	update_sequent_element pt state 
+! 	  (Hashtbl.find pt.sequent_hash sequent_id) sequent_text
+        with
+  	| Not_found ->
+  	  raise (Proof_tree_error "Update unknown sequent")
+--- 1001,1007 ----
+        then raise (Proof_tree_error "Update sequent on other non-current proof");
+        try
+  	update_sequent_element pt state 
+! 	  (Hashtbl.find pt.sequent_hash sequent_id) sequent_text a_list
+        with
+  	| Not_found ->
+  	  raise (Proof_tree_error "Update unknown sequent")
+***************
+*** 956,961 ****
+--- 1076,1108 ----
+        assert (pt.current_sequent <> None && pt.current_sequent_id <> None);
+        finish_branch pt state proof_command cheated_flag
+  	uninstatiated_existentials instantiated_ex_deps;
++       (* This function is called (1) every time a branch is finished using bullets, and
++          (2) once the overall proof is finished. In the case of (1),
++          next current node is unknown here, i.e., current_sequent_id = -1 (pt.current_sequent = None).
++          Here we try to find the next current node even in those situations.
++          This is required for implementing "current only mode."
++          The next CurrentNode will be the little brother of the root of latest proved subtree.
++          Actually, it is the first Unproven turnstile node.
++        *)
++       if pt.open_goals_count > 0 then
++         let new_current_opt =
++           pt.window#find_node (fun n -> 
++               n#children = [] && n#branch_state = Unproven && n#node_kind = Turnstile)
++         in
++         let new_current = match new_current_opt with
++           | None -> assert false
++           | Some new_c -> new_c
++         in begin
++             new_current#mark_current;
++             let undo () = 
++               new_current#unmark_current
++             in
++             add_undo_action pt state undo
++           end
++ 
++          ; pt.window#show_node new_current
++ 
++       else ();
+        let message = 
+  	if pt.open_goals_count = 0
+  	then begin
+***************
+*** 1045,1050 ****
+--- 1192,1198 ----
+      if pt.need_redraw then begin
+        pt.window#refresh_and_position;
+        pt.window#update_ext_dialog;
++       pt.window#configuration_updated;
+      end;
+      pt.sequent_area_needs_refresh <- false;
+      pt.need_redraw <- false
+diff -c prooftree-0.13/proof_tree.mli traf-0.1/proof_tree.mli
+*** prooftree-0.13/proof_tree.mli	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/proof_tree.mli	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 71,77 ****
+  val process_current_goals :
+    int -> string -> string -> 
+    bool -> bool -> string -> string -> string list -> string list -> 
+!   (string * string list) list -> unit
+  
+  
+  (** Process an [update-sequent] command. This function is a wrapper
+--- 71,77 ----
+  val process_current_goals :
+    int -> string -> string -> 
+    bool -> bool -> string -> string -> string list -> string list -> 
+!   (string * string list) list -> (string * string) list-> unit
+  
+  
+  (** Process an [update-sequent] command. This function is a wrapper
+***************
+*** 83,89 ****
+      @param sequent_id ID of sequent to update
+      @param sequent_text new sequent text
+  *)
+! val update_sequent : int -> string -> string -> string -> unit
+  
+  
+  (** Switch to a different open goal.
+--- 83,90 ----
+      @param sequent_id ID of sequent to update
+      @param sequent_text new sequent text
+  *)
+! (* val update_sequent : int -> string -> string -> string -> string -> unit *)
+! val update_sequent : int -> string -> string -> string -> (string * string) list -> unit
+  
+  
+  (** Switch to a different open goal.
+diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
+*** prooftree-0.13/proof_window.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/proof_window.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 101,106 ****
+--- 101,109 ----
+    (** y-offset of the bounding box of the top layer. Constantly 0. *)
+    val top_top = 0
+  
++   (* y-coordinate of the root node. *)
++   val mutable root_y_coordinate = 0
++ 
+    (** [true] if the sequent area should always show the last line.
+        This is set to [true] when a sequent is shown and to false when
+        a proof command is shown. *)
+***************
+*** 167,172 ****
+--- 170,180 ----
+    *)
+    val mutable disconnected = false
+  
++   method toggle_show_current_only =
++     Traf_aux.show_current_only_flag :=
++       not !Traf_aux.show_current_only_flag;
++     self#configuration_updated;
++ 
+    (** The stack of layers, containing all proof trees belonging to
+        this proof.
+    *)
+***************
+*** 222,231 ****
+--- 230,252 ----
+        It further sets {!sequent_window_scroll_to_bottom} to
+        [scroll_to_bottom].
+    *)
++   val mutable saved_info = None
+    method private update_sequent_area label content scroll_to_bottom =
++     match saved_info with
++     | None -> begin
++     labeled_sequent_frame#set_label (Some label);
++     sequent_window#buffer#set_text content;
++     sequent_window_scroll_to_bottom <- scroll_to_bottom
++     ; saved_info <- Some (label, content, scroll_to_bottom)
++       end
++     | Some (l, c, s) -> if l = label && c = content && s = scroll_to_bottom
++                         then ()
++                         else begin
+      labeled_sequent_frame#set_label (Some label);
+      sequent_window#buffer#set_text content;
+      sequent_window_scroll_to_bottom <- scroll_to_bottom
++     ; saved_info <- Some (label, content, scroll_to_bottom)
++       end
+  
+    (** Clear the sequent area. *)
+    method private clear_sequent_area =
+***************
+*** 250,267 ****
+  	  | Some node ->
+  	    if node#node_kind = Turnstile
+  	    then
+! 	      match node#parent with
+! 		| None -> self#clear_sequent_area
+! 		| Some p -> match p#parent with
+! 		    | None -> self#clear_sequent_area
+! 		    | Some p ->
+! 		      self#update_sequent_area
+! 			"Previous sequent"
+! 			p#displayed_text
+! 			true
+  	    else
+  	      self#clear_sequent_area
+  
+  
+    (***************************************************************************
+     *
+--- 271,300 ----
+  	  | Some node ->
+  	    if node#node_kind = Turnstile
+  	    then
+!               self#update_sequent_area
+! 	        "Current assumptions"
+! 	        node#displayed_text
+! 	        true
+  	    else
+  	      self#clear_sequent_area
+  
++   method perform_tree_abbreviation =
++     let do_nothing () =
++       self#message "";
++       self#update_sequent_area "Subtree abbreviation"
++         "Please choose a sequent node first." false
++     in
++     match selected_node with
++     | None -> do_nothing ()
++     | Some node -> match node#node_kind with
++                    | Turnstile -> begin
++                        node#invert_abbreviated_subtree;
++                        self#configuration_updated;
++ 	               self#update_sequent_area "Subtree abbreviation"
++                          "Abbreviation process finished." false;
++ 	               self#message "";
++                      end
++                    | Proof_command -> do_nothing ()
+  
+    (***************************************************************************
+     *
+***************
+*** 471,478 ****
+  	  && (List.mem `CONTROL (GdkEvent.Key.state ev))
+  	  -> 
+  	exit 0
+!       | ks when (ks = GdkKeysyms._Q || ks = GdkKeysyms._q)  -> 
+! 	self#user_delete_proof_window (); true
+        | ks when ks = GdkKeysyms._Left -> 
+  	scroll_adjustment drawing_h_adjustment (-1); true
+        | ks when ks = GdkKeysyms._Right -> 
+--- 504,510 ----
+  	  && (List.mem `CONTROL (GdkEvent.Key.state ev))
+  	  -> 
+  	exit 0
+! 
+        | ks when ks = GdkKeysyms._Left -> 
+  	scroll_adjustment drawing_h_adjustment (-1); true
+        | ks when ks = GdkKeysyms._Right -> 
+***************
+*** 482,490 ****
+        | ks when ks = GdkKeysyms._Down -> 
+  	scroll_adjustment drawing_v_adjustment 1; true
+  
+!       | ks when (ks = GdkKeysyms._E || ks = GdkKeysyms._e)  -> 
+!       	self#show_existential_window (); true
+! 
+        (* 
+         * | ks when (ks = GdkKeysyms._C or ks = GdkKeysyms._c)  -> 
+         * 	show_config_window (); true
+--- 514,541 ----
+        | ks when ks = GdkKeysyms._Down -> 
+  	scroll_adjustment drawing_v_adjustment 1; true
+  
+!       | ks when (ks = GdkKeysyms._N || ks = GdkKeysyms._n)
+!                 && (List.mem `CONTROL (GdkEvent.Key.state ev)) -> 
+!          Emacs_commands.emacs_callback_process_next_command (); true
+!       | ks when (ks = GdkKeysyms._U || ks = GdkKeysyms._u)
+!                 && (List.mem `CONTROL (GdkEvent.Key.state ev)) -> 
+!          Emacs_commands.emacs_callback_undo_previous_command (); true
+!       | ks when (ks = GdkKeysyms._S || ks = GdkKeysyms._s)
+!                 && (List.mem `CONTROL (GdkEvent.Key.state ev)) -> 
+!          scroll_adjustment drawing_h_adjustment (-1); true
+!       | ks when (ks = GdkKeysyms._F || ks = GdkKeysyms._f)
+!                 && (List.mem `CONTROL (GdkEvent.Key.state ev)) -> 
+!          scroll_adjustment drawing_h_adjustment 1; true
+!       | ks when (ks = GdkKeysyms._E || ks = GdkKeysyms._e)
+!                 && (List.mem `CONTROL (GdkEvent.Key.state ev)) -> 
+!          scroll_adjustment drawing_v_adjustment (-1); true
+!       | ks when (ks = GdkKeysyms._D || ks = GdkKeysyms._d)
+!                 && (List.mem `CONTROL (GdkEvent.Key.state ev)) -> 
+!          scroll_adjustment drawing_v_adjustment 1; true
+!                                                    
+!     (*| ks when (ks = GdkKeysyms._E || ks = GdkKeysyms._e)  -> 
+!       	 self#show_existential_window (); true*)
+!                                                    
+        (* 
+         * | ks when (ks = GdkKeysyms._C or ks = GdkKeysyms._c)  -> 
+         * 	show_config_window (); true
+***************
+*** 652,663 ****
+  	      success := false;
+  	      (* Printf.fprintf (debugc()) "clever forced error %!" *)
+  	    end else begin
+  	      let y_val = 
+  		max drawing_v_adjustment#lower 
+  		  (float_of_int (y_u_i - y_page_size))
+  	      in
+  	      drawing_v_adjustment#set_value y_val;
+! 
+  	      (* make now the _h_adjustment, first try if one of the 
+                 * hint nodes can be made visible as well
+  	       *)
+--- 703,747 ----
+  	      success := false;
+  	      (* Printf.fprintf (debugc()) "clever forced error %!" *)
+  	    end else begin
++ (*
+  	      let y_val = 
+  		max drawing_v_adjustment#lower 
+  		  (float_of_int (y_u_i - y_page_size))
+  	      in
+  	      drawing_v_adjustment#set_value y_val;
+!  *)
+! (*******)
+!               (* _v_adjustment *)
+! 	      if 
+! 		List.exists
+! 		  (fun hint_nodes ->
+! 		    let (off_l, off_u) =
+! 		      List.fold_left
+! 			(fun (off_l, off_u) hint_node ->
+! 			  let (_, _, v_y_l_off, v_y_u_off) = 
+! 			    hint_node#bounding_box_offsets 
+! 			  in
+! 			  (min off_l v_y_l_off, max off_u v_y_u_off))
+! 			(y_l_off, y_u_off)
+! 			hint_nodes
+! 		    in
+! 		    if y_page_size >= (off_u - off_l)
+! 		    then begin
+! 		      (* the hints fit *)
+! 		      drawing_v_adjustment#clamp_page
+! 			~lower:(float_of_int (top_left + off_l))
+! 			~upper:(float_of_int (top_top + off_u));
+! 		      true
+! 		    end else 
+! 		      (* the hints don't fit *)
+! 		      false
+! 		  )
+! 		  position_hints
+! 	      then 
+!                 ()
+! 	      else
+! 		drawing_v_adjustment#clamp_page ~lower:y_l_f ~upper:y_u_f;
+! (*******)
+  	      (* make now the _h_adjustment, first try if one of the 
+                 * hint nodes can be made visible as well
+  	       *)
+***************
+*** 748,753 ****
+--- 832,840 ----
+       * 	~width:(max current_width new_width)
+       * 	~height:(max current_height new_height) ();
+       *)
++     root_y_coordinate <- new_height;
++     let new_width = new_width + 100 in
++     let new_height = new_height + 60 in
+      drawing_area#misc#set_size_request ~width:new_width ~height:new_height ();
+  
+    (** Sets the position of the proof tree in the drawing area by 
+***************
+*** 775,781 ****
+      self#try_adjustment;
+      self#erase;
+      (* Printf.fprintf (debugc()) "REDRAW\n%!"; *)
+!     layer_stack#draw top_left top_top
+  
+    (** Schedule an expose event for the drawing area, thereby causing
+        it to get redrawn.
+--- 862,868 ----
+      self#try_adjustment;
+      self#erase;
+      (* Printf.fprintf (debugc()) "REDRAW\n%!"; *)
+!     layer_stack#draw top_left top_top root_y_coordinate
+  
+    (** Schedule an expose event for the drawing area, thereby causing
+        it to get redrawn.
+***************
+*** 803,809 ****
+    *)
+    method reposition_current_node () =
+      position_to_current_node <- true;
+!     self#try_adjustment
+  
+    (** Make the current node visible in a user friendly way. *)
+    method show_current_node () =
+--- 890,897 ----
+    *)
+    method reposition_current_node () =
+      position_to_current_node <- true;
+!     self#try_adjustment;
+!     position_to_current_node <- false
+  
+    (** Make the current node visible in a user friendly way. *)
+    method show_current_node () =
+***************
+*** 1024,1030 ****
+      'a . int -> int -> (#proof_tree_element -> 'a) -> (unit -> 'a) -> 'a =
+      fun x y node_click_fun outside_click_fun ->
+        match layer_stack#find_node_for_point_in_layer_stack 
+! 	                              top_left top_top x y with
+  	| None -> outside_click_fun ()
+  	| Some node -> node_click_fun node
+  
+--- 1112,1118 ----
+      'a . int -> int -> (#proof_tree_element -> 'a) -> (unit -> 'a) -> 'a =
+      fun x y node_click_fun outside_click_fun ->
+        match layer_stack#find_node_for_point_in_layer_stack 
+! 	top_left (*top_top*)root_y_coordinate x y with
+  	| None -> outside_click_fun ()
+  	| Some node -> node_click_fun node
+  
+***************
+*** 1045,1055 ****
+--- 1133,1145 ----
+      self#remember_for_dragging;
+      if (not double) && (not shifted)
+      then self#save_selected_node_state;
++ (* --- disabled ---
+      if double && (not shifted)
+      then self#double_restore_selected_node;
+      if double || shifted 
+      then self#locate_button_node x y self#external_node_window (fun () -> ())
+      else 
++  *)
+        self#locate_button_node x y 
+  	(fun node -> self#set_selected_node (Some node))
+  	(fun () -> self#set_selected_node None)
+***************
+*** 1112,1117 ****
+--- 1202,1208 ----
+        when dragging started.
+    *)
+    method pointer_motion (_ev : GdkEvent.Motion.t) =
++ (*
+      let (x, y) = Gdk.Window.get_pointer_location top_window#misc#window in
+      let new_h_value = 
+        last_button_press_h_adjustment_value +.
+***************
+*** 1123,1128 ****
+--- 1214,1220 ----
+      	!current_config.button_1_drag_acceleration *. 
+  	(float_of_int (y - last_button_press_top_y))
+      in
++  *)
+      (* 
+       * let hint = GdkEvent.Motion.is_hint _ev in
+       * Printf.fprintf (debugc()) 
+***************
+*** 1130,1141 ****
+--- 1222,1235 ----
+       *)
+      if not restored_selected_node 
+      then self#single_restore_selected_node;
++ (*
+      drawing_h_adjustment#set_value 
+        (min new_h_value 
+      	 (drawing_h_adjustment#upper -. drawing_h_adjustment#page_size));
+      drawing_v_adjustment#set_value 
+        (min new_v_value
+      	 (drawing_v_adjustment#upper -. drawing_v_adjustment#page_size));
++  *)
+      (* 
+       * last_button_1_x <- x;
+       * last_button_1_y <- y;
+***************
+*** 1269,1275 ****
+  	  end 
+  	  else false
+  	| Proof_command ->
+! 	  if !current_config.display_command_tooltips && node#content_shortened
+  	  then begin
+  	    let contents = GMisc.label ~text:node#displayed_text () in
+  	    GtkBase.Tooltip.set_custom tooltip contents#as_widget;
+--- 1363,1369 ----
+  	  end 
+  	  else false
+  	| Proof_command ->
+! 	  if !current_config.display_command_tooltips (* && node#content_shortened *)
+  	  then begin
+  	    let contents = GMisc.label ~text:node#displayed_text () in
+  	    GtkBase.Tooltip.set_custom tooltip contents#as_widget;
+***************
+*** 1347,1354 ****
+      ~packing:(top_v_box#pack ~expand:true) ()
+    in
+    let drawing_scrolling = GBin.scrolled_window (* ~border_width:1 *)
+!     ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC 
+!     ~packing:(top_paned#pack1 ~resize:true ~shrink:false) () 
+    in
+    let drawing_h_adjustment = drawing_scrolling#hadjustment in
+    let drawing_v_adjustment = drawing_scrolling#vadjustment in
+--- 1441,1448 ----
+      ~packing:(top_v_box#pack ~expand:true) ()
+    in
+    let drawing_scrolling = GBin.scrolled_window (* ~border_width:1 *)
+!     ~hpolicy:`ALWAYS(*AUTOMATIC*) ~vpolicy:`ALWAYS(*AUTOMATIC*)
+!     ~packing:(top_paned#pack2 ~resize:true ~shrink:false) () 
+    in
+    let drawing_h_adjustment = drawing_scrolling#hadjustment in
+    let drawing_v_adjustment = drawing_scrolling#vadjustment in
+***************
+*** 1361,1367 ****
+        drawing_area#misc#create_pango_context
+    in
+    let outer_sequent_frame = GBin.frame ~shadow_type:`IN 
+!     ~packing:(top_paned#pack2 ~resize:false ~shrink:true) () 
+    in
+    let labeled_sequent_frame = GBin.frame ~label:"no sequent" ~shadow_type:`NONE
+      ~packing:outer_sequent_frame#add ()
+--- 1455,1461 ----
+        drawing_area#misc#create_pango_context
+    in
+    let outer_sequent_frame = GBin.frame ~shadow_type:`IN 
+!     ~packing:(top_paned#pack1 ~resize:false ~shrink:true) () 
+    in
+    let labeled_sequent_frame = GBin.frame ~label:"no sequent" ~shadow_type:`NONE
+      ~packing:outer_sequent_frame#add ()
+***************
+*** 1399,1404 ****
+--- 1493,1506 ----
+        ~packing:(button_h_box#pack ~expand:true ~fill:true) ()
+    in
+    message_label#set_use_markup true;
++ 
++   let toggle_draw_mode_button = 
++   GButton.button ~label:"Toggle drawing mode : [show all]" ~packing:(button_h_box#pack) ()
++   in
++   let abbrev_button = 
++   GButton.button ~label:"Abbreviate subtree" ~packing:(button_h_box#pack) ()
++   in
++ 
+    let menu_button = 
+      GButton.button ~label:"Menu" ~packing:(button_h_box#pack) ()
+    in
+***************
+*** 1418,1425 ****
+      proof_window#clone owin
+    in
+  
+    let main_menu_entries = 
+!     [`I("Clone", clone_fun);
+       `I("Show current", proof_window#reposition_current_node);
+       `I("Show selected", proof_window#show_selected_node);
+       `I("Existentials", proof_window#show_existential_window);
+--- 1520,1544 ----
+      proof_window#clone owin
+    in
+  
++   let toggle_show_current_only_fun () =
++     proof_window#toggle_show_current_only;
++     begin
++       match !Traf_aux.show_current_only_flag with
++       | false -> begin
++           toggle_draw_mode_button#set_label "Toggle drawing mode : [show all]";
++         end
++       | true -> begin
++           toggle_draw_mode_button#set_label "Toggle drawing mode : [current goal]";
++         end
++     end;
++   in
++ 
+    let main_menu_entries = 
+!     [`I("Toggle draw mode: show all / current only", toggle_show_current_only_fun);
+!      `I("Clone", clone_fun);
+!      `I("Extract LaTeX Code", (fun ()-> (Conv_latex.show_conv_window_new 
+!                                            (proof_window#find_node (fun n -> true)))));
+! 
+       `I("Show current", proof_window#reposition_current_node);
+       `I("Show selected", proof_window#show_selected_node);
+       `I("Existentials", proof_window#show_existential_window);
+***************
+*** 1497,1502 ****
+--- 1616,1631 ----
+  	     main_menu#popup ~button:0 
+  	       ~time:(GtkMain.Main.get_current_event_time ())));
+  
++   ignore(toggle_draw_mode_button#connect#clicked
++ 	   ~callback:(fun () ->
++              toggle_show_current_only_fun ();
++            ));
++   ignore(abbrev_button#connect#clicked
++ 	   ~callback:(fun () ->
++              proof_window#perform_tree_abbreviation
++            )
++         );
++       
+    top_window#show ();
+    if geometry_string <> "" then
+      ignore(top_window#parse_geometry geometry_string);
+Common subdirectories: prooftree-0.13/test and traf-0.1/test
+Only in traf-0.1: traf_aux.ml
+diff -c prooftree-0.13/tree_layers.ml traf-0.1/tree_layers.ml
+*** prooftree-0.13/tree_layers.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/tree_layers.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 166,176 ****
+    (** Draw the content of this layer relative to the specified left
+        and top coordinate.
+    *)
+!   method draw left top =
+      ignore(
+        List.fold_left
+  	(fun left r -> 
+! 	  r#draw_tree_root left top;
+  	  left + !current_config.proof_tree_sep + r#subtree_width)
+  	left tree_list)
+  
+--- 166,176 ----
+    (** Draw the content of this layer relative to the specified left
+        and top coordinate.
+    *)
+!   method draw left top root_y_coordinate =
+      ignore(
+        List.fold_left
+  	(fun left r -> 
+! 	  r#draw_tree_root left top root_y_coordinate;
+  	  left + !current_config.proof_tree_sep + r#subtree_width)
+  	left tree_list)
+  
+***************
+*** 181,187 ****
+      let rec iter left = function
+        | [] -> None
+        | r :: rest ->
+! 	if left <= bx && bx <= left + r#subtree_width
+  	then r#find_node_for_point_root left top bx by
+  	else 
+  	  let left = 
+--- 181,187 ----
+      let rec iter left = function
+        | [] -> None
+        | r :: rest ->
+! 	if left <= bx (* && bx <= left + r#subtree_width *)
+  	then r#find_node_for_point_root left top bx by
+  	else 
+  	  let left = 
+***************
+*** 391,401 ****
+    (** Draw the content of this stack of layers relative to the
+        specified left and top coordinate. 
+    *)
+!   method draw left top =
+      ignore(
+        List.fold_left
+  	(fun top l -> 
+! 	  l#draw (left + self#layer_indent l) top;
+  	  top + !current_config.layer_sep + l#height)
+  	top layers)
+  
+--- 391,401 ----
+    (** Draw the content of this stack of layers relative to the
+        specified left and top coordinate. 
+    *)
+!   method draw left top root_y_coordinate =
+      ignore(
+        List.fold_left
+  	(fun top l -> 
+! 	  l#draw (left + self#layer_indent l) top root_y_coordinate;
+  	  top + !current_config.layer_sep + l#height)
+  	top layers)
+  
+***************
+*** 408,415 ****
+--- 408,420 ----
+        | [] -> None
+        | l :: rest ->
+  	let left = left + (self#layer_indent l) in
++ (*
+  	if top <= by && by <= top + l#height &&
+  	  left <= bx && bx <= left + l#width
++ *)
++         if 0 (*- l#height/2*) <= by &&
++           by <= top + (l#height/2) && left <= bx  
++ 
+  	then l#find_node_for_point_in_layer left top bx by
+  	else 
+  	  let top = top + !current_config.layer_sep + l#height in
+diff -c prooftree-0.13/util.ml traf-0.1/util.ml
+*** prooftree-0.13/util.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/util.ml	2018-04-22 23:52:08.000000000 +0900
+***************
+*** 285,290 ****
+--- 285,298 ----
+  (** {2 Debugging support} *)
+  (****************************************************************************)
+  
++ (** Return homedir.
++ *)
++ let homedir () =
++   try Unix.getenv "HOME" 
++   with 
++   | Not_found -> (Unix.getpwuid (Unix.getuid ())).Unix.pw_dir
++     
++ 
+  (** Return the filehandle for debugmessages. Only used during
+      debugging sessions. 
+  *)
+***************
+*** 293,298 ****
+    fun () -> match !copt with
+      | Some c -> c
+      | None ->
+!       let c = open_out "/tmp/prooftree-debug" in
+        copt := Some c;
+        c
+--- 301,306 ----
+    fun () -> match !copt with
+      | Some c -> c
+      | None ->
+!       let c = open_out (homedir () ^ "/.traf-debug") in
+        copt := Some c;
+        c
