@@ -1,6 +1,6 @@
 diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
 *** prooftree-0.13/Makefile.in	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/Makefile.in	2018-04-23 00:31:56.000000000 +0900
+--- traf-0.1/Makefile.in	2018-04-23 16:22:46.000000000 +0900
 ***************
 *** 75,80 ****
 --- 75,82 ----
@@ -41,7 +41,7 @@ diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
   prooftree.byte: $(CMO_OBJECTS)
 diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
 *** prooftree-0.13/about_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/about_window.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/about_window.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 50,55 ****
 --- 50,60 ----
@@ -83,7 +83,7 @@ diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
   	  (* ~destroy_with_parent:bool -> *)
 diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
 *** prooftree-0.13/configuration.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/configuration.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/configuration.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 42,48 ****
   let config_file_location = 
@@ -230,6 +230,44 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
   (** The complete ASCII header of configuration files. *)
   let config_file_header = config_file_header_start ^ config_file_version ^ "\n"
 ***************
+*** 501,514 ****
+        (* print_endline "after read"; *)
+        res
+      with
+!       | Failure "Incompatible configuration file version" ->
+! 	print_endline "version error";
+! 	run_message_dialog
+! 	  ("File " ^ config_file_location ^ 
+! 	      " is not compatible with this version of Prooftree!\n\
+!                Using default configuration.")
+! 	  `WARNING;
+! 	None
+        | _ -> 
+  	print_endline "other error";
+  	None
+--- 501,521 ----
+        (* print_endline "after read"; *)
+        res
+      with
+!     | Failure str ->
+!        if str = "Incompatible configuration file version" then begin
+! 	   print_endline "version error";
+! 	   run_message_dialog
+! 	     ("File " ^ config_file_location ^ 
+! 	        " is not compatible with this version of Prooftree!\n\
+!                  Using default configuration.")
+! 	     `WARNING;
+! 	   None
+!          end
+!        else
+!          begin
+! 	   print_endline "other error";
+!            None
+!          end
+        | _ -> 
+  	print_endline "other error";
+  	None
+***************
 *** 605,611 ****
     top_window
     line_width_adjustment
@@ -238,7 +276,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
     proof_tree_sep_adjustment
     subtree_sep_adjustment
     command_length_adjustment
---- 605,611 ----
+--- 612,618 ----
     top_window
     line_width_adjustment
     turnstile_size_adjustment
@@ -255,7 +293,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       proof_tree_sep_adjustment#set_value (float_of_int conf.proof_tree_sep);
       command_length_adjustment#set_value (float_of_int conf.proof_command_length);
       level_dist_adjustment#set_value (float_of_int conf.level_distance);
---- 658,664 ----
+--- 665,671 ----
       line_width_adjustment#set_value (float_of_int conf.turnstile_line_width);
       turnstile_size_adjustment#set_value (float_of_int conf.turnstile_radius);
       subtree_sep_adjustment#set_value (float_of_int conf.subtree_sep);
@@ -272,7 +310,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
         proof_tree_sep = round_to_int proof_tree_sep_adjustment#value;
         subtree_sep = round_to_int subtree_sep_adjustment#value;
         proof_command_length = round_to_int command_length_adjustment#value;
---- 754,761 ----
+--- 761,768 ----
       let c = {
         turnstile_line_width = round_to_int line_width_adjustment#value;
         turnstile_radius = round_to_int turnstile_size_adjustment#value;
@@ -282,6 +320,75 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
         subtree_sep = round_to_int subtree_sep_adjustment#value;
         proof_command_length = round_to_int command_length_adjustment#value;
 ***************
+*** 918,942 ****
+        current configuration and update this dialog accordingly.
+    *)
+    method restore () = 
+!     try
+!       let c = read_config_file config_file_location in
+!       self#change_config_and_config_window c
+!     with
+!       | Sys_error s when Util.string_ends s "No such file or directory" ->
+! 	run_message_dialog
+! 	  ("No configuration file at " ^ config_file_location ^ "!")
+! 	  `WARNING
+!       | Failure "Incompatible configuration file version" ->
+! 	run_message_dialog
+! 	  ("File " ^ config_file_location ^ 
+! 	      " is not compatible with this version of Prooftree!")
+! 	  `WARNING
+!       | Failure "Invalid configuration file" ->
+! 	run_message_dialog
+! 	  ("File " ^ config_file_location ^ " is not a valid Prooftree \
+!             configuration file!")
+! 	  `WARNING
+!       | e ->
+  	let backtrace = Printexc.get_backtrace () in
+  	let buf = Buffer.create 4095 in
+  	let print_backtrace = ref !current_config.debug_mode in
+--- 926,932 ----
+        current configuration and update this dialog accordingly.
+    *)
+    method restore () = 
+!     let internal_error e =
+  	let backtrace = Printexc.get_backtrace () in
+  	let buf = Buffer.create 4095 in
+  	let print_backtrace = ref !current_config.debug_mode in
+***************
+*** 959,964 ****
+--- 949,979 ----
+  	prerr_endline (Buffer.contents buf);
+  	run_message_dialog (Buffer.contents buf) `WARNING;
+  	()
++     in
++     try
++       let c = read_config_file config_file_location in
++       self#change_config_and_config_window c
++     with
++       | Sys_error s when Util.string_ends s "No such file or directory" ->
++ 	run_message_dialog
++ 	  ("No configuration file at " ^ config_file_location ^ "!")
++ 	  `WARNING
++       | Failure str ->
++          if str = "Incompatible configuration file version" then begin
++ 	     run_message_dialog
++ 	       ("File " ^ config_file_location ^ 
++ 	          " is not compatible with this version of Prooftree!")
++ 	       `WARNING
++            end
++          else if str = "Invalid configuration file" then begin
++ 	     run_message_dialog
++ 	       ("File " ^ config_file_location ^ " is not a valid Prooftree \
++                                                   configuration file!")
++ 	       `WARNING
++            end
++          else
++            internal_error (Failure str)
++       | e -> internal_error e
+  	  
+  
+    (** Action for the Cancel button and the destroy signal. *)
+***************
 *** 995,1001 ****
     let top_window = GWindow.window () in
     let top_v_box = GPack.vbox ~packing:top_window#add () in
@@ -290,7 +397,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       ~xpad:10 ~ypad:10
       ~packing:top_v_box#pack () in
   
---- 996,1002 ----
+--- 1010,1016 ----
     let top_window = GWindow.window () in
     let top_v_box = GPack.vbox ~packing:top_window#add () in
     let _config_title = GMisc.label
@@ -310,7 +417,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       ~packing:(tree_frame_table#attach ~left:0 ~top:1) () in
     let turnstile_size_spinner = GEdit.spin_button
       ~digits:0 ~numeric:true
---- 1042,1055 ----
+--- 1056,1069 ----
   
     (* turnstile radius *)
     let turnstile_size_tooltip = 
@@ -337,7 +444,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       ~packing:(tree_frame_table#attach ~left:0 ~top:2) () in
     let line_sep_spinner = GEdit.spin_button
       ~digits:0 ~numeric:true
---- 1062,1074 ----
+--- 1076,1088 ----
     turnstile_size_spinner#misc#set_tooltip_text turnstile_size_tooltip;
   
     (* line_sep *)
@@ -353,7 +460,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       ~digits:0 ~numeric:true
 ***************
 *** 1071,1076 ****
---- 1079,1085 ----
+--- 1093,1099 ----
       (float_of_int current_config.line_sep);
     line_sep_label#misc#set_tooltip_text line_sep_tooltip;
     line_sep_spinner#misc#set_tooltip_text line_sep_tooltip;
@@ -370,7 +477,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
         proof_tree_sep_adjustment
         subtree_sep_adjustment
         command_length_adjustment
---- 1565,1571 ----
+--- 1579,1585 ----
         top_window 
         line_width_adjustment
         turnstile_size_adjustment
@@ -387,7 +494,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
   	proof_tree_sep_label#misc; proof_tree_sep_spinner#misc;
   	subtree_sep_label#misc; subtree_sep_spinner#misc;
   	command_length_label#misc; command_length_spinner#misc;
---- 1594,1600 ----
+--- 1608,1614 ----
         tee_file_name_entry
         [ line_width_label#misc; line_width_spinner#misc;
   	turnstile_size_label#misc; turnstile_size_spinner#misc;
@@ -408,7 +515,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
        proof_tree_sep_adjustment; subtree_sep_adjustment; 
        command_length_adjustment; level_dist_adjustment; layer_sep_adjustment;
        drag_accel_adjustment; default_size_width_adjustment; 
---- 1625,1636 ----
+--- 1639,1650 ----
         ]
     in
   
@@ -421,10 +528,34 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
        proof_tree_sep_adjustment; subtree_sep_adjustment; 
        command_length_adjustment; level_dist_adjustment; layer_sep_adjustment;
        drag_accel_adjustment; default_size_width_adjustment; 
+diff -c prooftree-0.13/configure traf-0.1/configure
+*** prooftree-0.13/configure	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/configure	2018-04-23 16:24:21.000000000 +0900
+***************
+*** 121,129 ****
+  check_lablgtk () {
+      echo test $ocamlc -I $1
+      if [ $native = "true" ] ; then
+! 	$ocamlc -o /dev/null -I $1 lablgtk.cmxa gtkInit.cmx
+      else
+! 	$ocamlc -o /dev/null -I $1 lablgtk.cma gtkInit.cmo
+      fi
+  }
+  
+--- 121,129 ----
+  check_lablgtk () {
+      echo test $ocamlc -I $1
+      if [ $native = "true" ] ; then
+! 	$ocamlc -o /dev/null -I $1 lablgtk.cmxa gtkInit.cmx >& /dev/null
+      else
+! 	$ocamlc -o /dev/null -I $1 lablgtk.cma gtkInit.cmo >& /dev/null
+      fi
+  }
+  
 Only in traf-0.1: conv_latex.ml
 diff -c prooftree-0.13/coq.ml traf-0.1/coq.ml
 *** prooftree-0.13/coq.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/coq.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/coq.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 106,111 ****
 --- 106,112 ----
@@ -464,7 +595,7 @@ diff -c prooftree-0.13/coq.ml traf-0.1/coq.ml
 !   end
 diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
 *** prooftree-0.13/draw_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/draw_tree.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/draw_tree.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 551,556 ****
 --- 551,564 ----
@@ -500,7 +631,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
 +   method invert_abbreviated_subtree = begin
 +       self#invert_abbrev_flag;
 +       self#set_node_size;
-+       self#iter_all_children_unit 0 0 (fun left y n -> 
++       self#iter_all_children_unit 0 0 (fun _ _ n -> 
 +           n#invert_abbreviated_subtree);
 +     end
   
@@ -717,11 +848,12 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
     (***************************************************************************)
 ***************
 *** 1147,1152 ****
---- 1204,1210 ----
+--- 1204,1211 ----
     (***************************************************************************)
     (***************************************************************************)
   
 +   method virtual displayed_text_pre : string
++ 
                                   (***************** inside proof_tree_element *)
     (** Return the displayed text for proof-tree elements, which
         contains additional information about uninstantiated and
@@ -736,7 +868,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
         ^ "\n\n"
         ^ (if uninst_ex <> [] 
   	then "Open Existentials: " 
---- 1214,1222 ----
+--- 1215,1223 ----
       let uninst_ex = filter_uninstantiated existential_variables in
       let partial_ex = filter_partially_instantiated existential_variables in
       if uninst_ex = [] && partial_ex = []
@@ -748,7 +880,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
   	then "Open Existentials: " 
 ***************
 *** 1253,1258 ****
---- 1311,1327 ----
+--- 1312,1328 ----
   (*****************************************************************************)
   (*****************************************************************************)
   
@@ -778,7 +910,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
   
     (** The pure sequent text. *)
     val mutable sequent_text = 
---- 1329,1338 ----
+--- 1330,1339 ----
       Argument undo_state saves the undo state for the current proof.
       It's value is arbitrary for cloned proof trees.
   *)
@@ -798,7 +930,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
   
     (** This is a [Turnstile] node. *)
     method node_kind = Turnstile
---- 1343,1349 ----
+--- 1344,1350 ----
     (** Pango layout for rendering text. Only created if an ID for
         an external window must be put into the display.
     *)
@@ -808,7 +940,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
     method node_kind = Turnstile
 ***************
 *** 1282,1287 ****
---- 1351,1439 ----
+--- 1352,1440 ----
     (** Return the pure sequent text as content. *)
     method content = sequent_text
   
@@ -924,7 +1056,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
       super#configuration_updated
   
                                            (***************** inside turnstile *)
---- 1473,1484 ----
+--- 1474,1485 ----
       List.iter (fun ew -> ew#update_content sequent_text_history)
         external_windows
   
@@ -970,7 +1102,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
   	Pango.Layout.set_text layout win#window_number;
   	let (w, h) = Pango.Layout.get_pixel_size layout in
   	drawable#put_layout 
---- 1486,1507 ----
+--- 1487,1508 ----
         coordinates.
     *)
     method private draw_turnstile x y =
@@ -1011,7 +1143,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
       self#set_node_size;
       (* 
        * Printf.fprintf (debugc()) "INIT %s width %d height %d\n%!"
---- 1537,1555 ----
+--- 1538,1556 ----
         
     (** Set width and height of this node. *)
     method private set_node_size =
@@ -1049,13 +1181,12 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
   (** Specific element class for proof commands. This class specializes
       the generic and abstract {!proof_tree_element} for proof-command
       nodes.
---- 1572,1577 ----
+--- 1573,1578 ----
 ***************
-*** 1485,1497 ****
-     *)
+*** 1486,1497 ****
     (** The pango layout for rendering the proof command text. *)
     val mutable layout = make_layout drawable_arg#pango_context
-- 
+  
 -   (** Width (in pixels) of the rendered proof command text. *)
 -   val mutable layout_width = 0
 - 
@@ -1065,10 +1196,10 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
                                 (***************** inside proof_command_length *)
     (** This is a [Proof_command] element, see {!node_kind}. *)
     method node_kind = Proof_command
---- 1609,1614 ----
+--- 1611,1616 ----
 ***************
 *** 1512,1517 ****
---- 1629,1635 ----
+--- 1631,1637 ----
   
     (** Render the proof command in the pango layout. *)
     method private render_proof_command =
@@ -1078,7 +1209,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
   	| [] -> displayed_command
 ***************
 *** 1527,1532 ****
---- 1645,1653 ----
+--- 1647,1655 ----
         the configuration has been changed.
     *)
     method private set_displayed_command =
@@ -1090,7 +1221,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
         content_shortened <- false;
 ***************
 *** 1541,1546 ****
---- 1662,1683 ----
+--- 1664,1685 ----
               ^ "\226\128\166" 			(* append horizontal ellipsis *)
       end
   
@@ -1115,7 +1246,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
     *)
 ***************
 *** 1555,1560 ****
---- 1692,1698 ----
+--- 1694,1700 ----
     method configuration_updated =
       self#set_displayed_command;
       layout <- make_layout drawable_arg#pango_context;
@@ -1138,7 +1269,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
   
                                 (***************** inside proof_command_length *)
     (** Compute the line offsets for proof-command nodes, see
---- 1739,1772 ----
+--- 1741,1774 ----
   	~width:w ~height:h ~filled:true ();
         restore_gc drawable gc
       end;
@@ -1153,7 +1284,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
 !     let (x_min, x_max) =
 !       self#iter_children 
 !         left 0 (s, e) (* y is not used *)
-!         (fun left y (x_min, x_max) ts ->
+!         (fun left _ (x_min, x_max) ts ->
 !           let cx = ts#get_x_coordinate left in
 !           let cw = ts#layout_width in
 !           ((min x_min (cx - (cw / 2)), max x_max (cx + (cw / 2))), true))
@@ -1182,7 +1313,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
       let corner_slope = (float_of_int width) /. (float_of_int height) in
       (* slope and corner_slope are actually inverse slopes: 
        * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
---- 1774,1781 ----
+--- 1776,1783 ----
     *)
     method line_offset slope = 
       let sign = if slope >= 0.0 then 1 else -1 in
@@ -1193,7 +1324,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
        * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
 ***************
 *** 1629,1634 ****
---- 1789,1815 ----
+--- 1791,1817 ----
         ((width/2 + line_sep) * sign,
          int_of_float(float_of_int(width/2 + line_sep) /. slope +. 0.5) * sign)
   
@@ -1223,7 +1354,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
       self#set_node_size;
 diff -c prooftree-0.13/emacs_commands.ml traf-0.1/emacs_commands.ml
 *** prooftree-0.13/emacs_commands.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/emacs_commands.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/emacs_commands.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 53,61 ****
   
@@ -1268,7 +1399,7 @@ diff -c prooftree-0.13/emacs_commands.ml traf-0.1/emacs_commands.ml
 !     
 diff -c prooftree-0.13/input.ml traf-0.1/input.ml
 *** prooftree-0.13/input.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/input.ml	2018-04-23 00:30:16.000000000 +0900
+--- traf-0.1/input.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 420,434 ****
     (* Printf.fprintf (debugc()) "GS cont %d - %d enter\n%!" i len; *)
@@ -1286,7 +1417,7 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     end
     else get_string_cont s i len continuation_fn ()
   
---- 420,435 ----
+--- 420,434 ----
     (* Printf.fprintf (debugc()) "GS cont %d - %d enter\n%!" i len; *)
     current_parser := (get_string_cont s i len continuation_fn);
     let n = local_input s i (len - i) in
@@ -1298,43 +1429,10 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     if i = len
     then begin
 !     (* Printf.fprintf (debugc()) "[GS cont] %d yields %s\n%!" len s;*)
-!     Traf_aux.save_sequent_text_or_existential_info (Bytes.to_string s);
 !     continuation_fn s
     end
     else get_string_cont s i len continuation_fn ()
   
-***************
-*** 442,449 ****
-  
-      @raise Sys_blocked_io when not enough input is available currently
-  *)
-! let get_string len continuation_fn =
-    (* Printf.fprintf (debugc()) "GS %d enter\n%!" len; *)
-    let s = Bytes.create len in
-    get_string_cont s 0 len continuation_fn ()
-  
---- 443,451 ----
-  
-      @raise Sys_blocked_io when not enough input is available currently
-  *)
-! let get_string len continuation_fn tag =
-    (* Printf.fprintf (debugc()) "GS %d enter\n%!" len; *)
-+   Traf_aux.save_parsing_state tag;
-    let s = Bytes.create len in
-    get_string_cont s 0 len continuation_fn ()
-  
-***************
-*** 535,540 ****
---- 537,545 ----
-      layer_string proof_name proof_command current_sequent_text 
-      additional_ids_string existentials_string =
-    (* Printf.fprintf (debugc()) "PCGF\n%!"; *)
-+ (*
-+   Printf.fprintf (Util.debugc()) "[PCGF] existentials_string=<%s>\n%!" existentials_string;
-+  *)
-    let cheated_flag = match cheated_string with
-      | "not-cheated" -> false
-      | "cheated" -> true
 ***************
 *** 555,568 ****
     in
@@ -1351,20 +1449,20 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     current_parser := !message_start_parser
   
       
---- 560,575 ----
+--- 555,570 ----
     in
     let proof_name = chop_final_newlines proof_name in
     let proof_command = chop_final_newlines proof_command in
-!   (*let current_sequent_text = chop_final_newlines current_sequent_text in*)
+!   (* let current_sequent_text = chop_final_newlines current_sequent_text in *)
     let additional_ids_string = chop_final_newlines additional_ids_string in
     let additional_ids = string_split ' ' additional_ids_string in
     let existentials_string = chop_final_newlines existentials_string in
     let (ex_uninst, ex_inst) = !parse_existential_info existentials_string in
     Proof_tree.process_current_goals state proof_name proof_command cheated_flag
 !     layer_flag current_sequent_id (*current_sequent_text*)
-!     (Traf_aux.mold_subgoal !Traf_aux.sequent_string)
+!     (Traf_aux.mold_subgoal current_sequent_text)
 !     additional_ids ex_uninst ex_inst
-!     (Traf_aux.mold_assumption !Traf_aux.sequent_string);
+!     (Traf_aux.mold_assumption current_sequent_text);
     current_parser := !message_start_parser
   
       
@@ -1373,20 +1471,20 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
   			  (fun existentials_string ->
   			    parse_current_goals_finish state current_sequent_id
   			      cheated_string layer_string
-  			      proof_name proof_command current_sequent_text
+! 			      proof_name proof_command current_sequent_text
 ! 			      additional_ids_string existentials_string))))))
   
   
   
---- 609,619 ----
+--- 604,614 ----
   			  (fun existentials_string ->
   			    parse_current_goals_finish state current_sequent_id
   			      cheated_string layer_string
-+ (*
-  			      proof_name proof_command current_sequent_text
-! *)
-! 			      (Bytes.to_string proof_name) (Bytes.to_string proof_command) (Bytes.to_string current_sequent_text)
-! 			      (Bytes.to_string additional_ids_string) (Bytes.to_string existentials_string))"existential")"additional_id")"sequent_text")"command") "proof_name")
+! 			      (Bytes.to_string proof_name)
+!                               (Bytes.to_string proof_command)
+!                               (Bytes.to_string current_sequent_text)
+! 			      (Bytes.to_string additional_ids_string)
+!                               (Bytes.to_string existentials_string)))))))
   
   
   
@@ -1400,13 +1498,13 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     current_parser := !message_start_parser
   
   
---- 638,646 ----
+--- 633,641 ----
   *)
   let parse_update_sequent_finish state sequent_id proof_name sequent_text =
     let proof_name = chop_final_newlines proof_name in
 !   Proof_tree.update_sequent state proof_name sequent_id (*sequent_text*)
-!            (Traf_aux.mold_subgoal !Traf_aux.sequent_string)
-!            (Traf_aux.mold_assumption !Traf_aux.sequent_string);
+!            (Traf_aux.mold_subgoal sequent_text)
+!            (Traf_aux.mold_assumption sequent_text);;
     current_parser := !message_start_parser
   
   
@@ -1419,11 +1517,11 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
   
   
   
---- 660,666 ----
+--- 655,661 ----
   	  get_string sequent_text_bytes
   	    (fun sequent_text ->
   	      parse_update_sequent_finish state sequent_id 
-! 		(Bytes.to_string proof_name) sequent_text) "sequent_text") "proof_name")
+! 		(Bytes.to_string proof_name) (Bytes.to_string sequent_text))))
   
   
   
@@ -1436,26 +1534,14 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
   
   
   
---- 697,703 ----
+--- 692,698 ----
       (fun state new_current_id proof_name_bytes ->
         get_string proof_name_bytes
   	(fun proof_name ->
-! 	  parse_switch_goal_finish state new_current_id (Bytes.to_string proof_name))"proof_name")
+! 	  parse_switch_goal_finish state new_current_id (Bytes.to_string proof_name)))
   
   
   
-***************
-*** 712,717 ****
---- 723,731 ----
-  *)
-  let parse_branch_finished_finish 
-      state cheated_string proof_name proof_command existentials_string =
-+ (*
-+   Printf.fprintf (Util.debugc()) "[PBFF] existentials_string=<%s>\n%!" existentials_string;
-+  *)
-    let cheated_flag = match cheated_string with
-      | "not-cheated" -> false
-      | "cheated" -> true
 ***************
 *** 748,755 ****
   	      get_string existential_bytes
@@ -1466,39 +1552,37 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
   
   
   
---- 762,769 ----
+--- 754,763 ----
   	      get_string existential_bytes
   		(fun existentials_string ->
   		  parse_branch_finished_finish 
-! 		    state cheated_string (Bytes.to_string proof_name)
-! 		    (Bytes.to_string proof_command) (Bytes.to_string existentials_string))"existential")"command")"proof_name")
+! 		    state cheated_string
+!                     (Bytes.to_string proof_name)
+! 		    (Bytes.to_string proof_command) 
+!                     (Bytes.to_string existentials_string)))))
   
   
   
 ***************
-*** 771,779 ****
+*** 771,777 ****
       (fun state proof_name_bytes ->
         get_string proof_name_bytes 
   	(fun proof_name ->
 ! 	  let proof_name = chop_final_newlines proof_name in
   	  Proof_tree.process_proof_complete state proof_name;
-! 	  current_parser := !message_start_parser))
+  	  current_parser := !message_start_parser))
   
-  
-  (******************************************************************************
---- 785,793 ----
+--- 779,785 ----
       (fun state proof_name_bytes ->
         get_string proof_name_bytes 
   	(fun proof_name ->
 ! 	  let proof_name = chop_final_newlines (Bytes.to_string proof_name) in
   	  Proof_tree.process_proof_complete state proof_name;
-! 	  current_parser := !message_start_parser) "proof_name")
+  	  current_parser := !message_start_parser))
   
-  
-  (******************************************************************************
 ***************
 *** 805,810 ****
---- 819,825 ----
+--- 813,819 ----
       @param proof_name full proof name (as raw data section string)
   *)
   let parse_quit_proof_finish proof_name =
@@ -1507,25 +1591,8 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     Proof_tree.quit_proof proof_name;
     current_parser := !message_start_parser
 ***************
-*** 819,825 ****
-    check_if_configured ();
-    Scanf.bscanf com_buf " proof-name-bytes %d"
-      (fun proof_name_bytes ->
-!       get_string proof_name_bytes parse_quit_proof_finish)
-  
-  
-  
---- 834,840 ----
-    check_if_configured ();
-    Scanf.bscanf com_buf " proof-name-bytes %d"
-      (fun proof_name_bytes ->
-!       get_string proof_name_bytes parse_quit_proof_finish "proof_name")
-  
-  
-  
-***************
 *** 839,844 ****
---- 854,860 ----
+--- 848,854 ----
       @raise Sys_blocked_io if parsing gets interrupted
   *)
   let parse_command command =
@@ -1534,18 +1601,8 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     let com_buf = Scanf.Scanning.from_string command in
     Scanf.bscanf com_buf "%s " 
 ***************
-*** 866,875 ****
-      @raise Sys_blocked_io if parsing gets interrupted
-  *)
-  let read_second_line first_line =
-    Scanf.sscanf first_line "second line %3d\n"
-      (fun second_line_len ->
-        (* Printf.fprintf (debugc()) "second line cont %d\n%!" second_line_len; *)
-!       get_string second_line_len parse_command)
-  
-  
-  (** Read the first, fixed-length line of a display command and switch
---- 882,892 ----
+*** 866,871 ****
+--- 876,882 ----
       @raise Sys_blocked_io if parsing gets interrupted
   *)
   let read_second_line first_line =
@@ -1553,30 +1610,9 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     Scanf.sscanf first_line "second line %3d\n"
       (fun second_line_len ->
         (* Printf.fprintf (debugc()) "second line cont %d\n%!" second_line_len; *)
-!       get_string second_line_len parse_command "second_line")
-  
-  
-  (** Read the first, fixed-length line of a display command and switch
-***************
-*** 889,895 ****
-     *)
-    (* Printf.fprintf (debugc()) "message start\n%!"; *)
-    try
-!     get_string 16 read_second_line
-    with
-      | Scanf.Scan_failure _
-      | Failure _ 
---- 906,912 ----
-     *)
-    (* Printf.fprintf (debugc()) "message start\n%!"; *)
-    try
-!     get_string 16 read_second_line "message_start"
-    with
-      | Scanf.Scan_failure _
-      | Failure _ 
 diff -c prooftree-0.13/proof_tree.ml traf-0.1/proof_tree.ml
 *** prooftree-0.13/proof_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/proof_tree.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/proof_tree.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 301,306 ****
 --- 301,375 ----
@@ -2015,7 +2051,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1/proof_tree.ml
       pt.need_redraw <- false
 diff -c prooftree-0.13/proof_tree.mli traf-0.1/proof_tree.mli
 *** prooftree-0.13/proof_tree.mli	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/proof_tree.mli	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/proof_tree.mli	2018-04-23 16:25:08.000000000 +0900
 ***************
 *** 71,77 ****
   val process_current_goals :
@@ -2053,7 +2089,7 @@ diff -c prooftree-0.13/proof_tree.mli traf-0.1/proof_tree.mli
   (** Switch to a different open goal.
 diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
 *** prooftree-0.13/proof_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/proof_window.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/proof_window.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 101,106 ****
 --- 101,109 ----
@@ -2493,7 +2529,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
 !     [`I("Toggle draw mode: show all / current only", toggle_show_current_only_fun);
 !      `I("Clone", clone_fun);
 !      `I("Extract LaTeX Code", (fun ()-> (Conv_latex.show_conv_window_new 
-!                                            (proof_window#find_node (fun n -> true)))));
+!                                            (proof_window#find_node (fun _ -> true)))));
 ! 
        `I("Show current", proof_window#reposition_current_node);
        `I("Show selected", proof_window#show_selected_node);
@@ -2517,11 +2553,12 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
     top_window#show ();
     if geometry_string <> "" then
       ignore(top_window#parse_geometry geometry_string);
+Only in traf-0.1: prooftree-to-traf.patch
 Common subdirectories: prooftree-0.13/test and traf-0.1/test
 Only in traf-0.1: traf_aux.ml
 diff -c prooftree-0.13/tree_layers.ml traf-0.1/tree_layers.ml
 *** prooftree-0.13/tree_layers.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/tree_layers.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/tree_layers.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 166,176 ****
     (** Draw the content of this layer relative to the specified left
@@ -2607,7 +2644,7 @@ diff -c prooftree-0.13/tree_layers.ml traf-0.1/tree_layers.ml
   	  let top = top + !current_config.layer_sep + l#height in
 diff -c prooftree-0.13/util.ml traf-0.1/util.ml
 *** prooftree-0.13/util.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/util.ml	2018-04-22 23:52:08.000000000 +0900
+--- traf-0.1/util.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 285,290 ****
 --- 285,298 ----

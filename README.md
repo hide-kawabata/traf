@@ -4,50 +4,58 @@ Traf is a proof tree viewer which cooperate with a proof assistant Coq and contr
 
 Traf is an extention to a proof tree viewer named Prooftree. Traf version 0.1 is based on Prooftree-0.13.
 
-Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Yuuki Sasaki and Mai Kimura.
+Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Yuuki Sasaki and Mai Kimura, at Hiroshima City University.
 
 
-Requirements:
+## Preparation
+
+Install following programs to build Traf.
 
 - Coq 8.4 or 8.6 (8.7 is not supported yet)
 - Proof General 4.4.1pre (older versions such as ver 3 can be used but slight modification of PG is required)
 - Lablgtk 2.18.5
 - OCaml 4.05.0
 
-##Installation
+## Installation
 
-1. Obtain prooftree-0.13.tar.gz and check files. 
+1. Obtain prooftree-0.13.tar.gz and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in misc directory.
 
- `$ tar zxfv prooftree-0.13.tar.gz`
- 
- See `https://askra.de/software/prooftree/` for details of Prooftree.
+    ```
+    $ tar zxfv prooftree-0.13.tar.gz
+    ```
+
 
 2. Put additional files and a patch file in the directory.
 
- `$ tar zxfv traf-0.1-patch.tar.gz`
+    ```
+    $ tar zxfv traf-0.1-patch.tar.gz
+    ```
 
 3. Apply the patch for Traf.
   
-  `$ cd prooftree-0.13`
-  `$ patch -p1 < the_patch_file`
+    ```
+    $ cd prooftree-0.13
+    $ patch -p1 < the_patch_file
+    ```
 
 4. Build.
 
-  `$ ./configure`
+    ```
+    $ ./configure
+    $ make
+    $ make install   <--- optional
+    ```
 
-  `$ make`
-  
-  `$ make install` (optional)
+## Settings
 
- 
-##Settings
- Put following lines in `.emacs`.
+Put following lines in `.emacs`.
 
-  `(setq coq-prog-name "/somewhere/coqtop")`
-  `(setq proof-tree-program "traf")`
-  `(setq exec-path (cons "/where/traf/resides/" exec-path))`
-  `(load "/somewhere/pg/is/installed/generic/proof-site")`
+    (setq coq-prog-name "/somewhere/coqtop")
+    (setq proof-tree-program "traf")
+    (setq exec-path (cons "/where/traf/resides/" exec-path))
+    (load "/somewhere/pg/is/installed/generic/proof-site")
 
-##Use
-- While proving by using Proof General, you can invoke Traf by clicking `prooftree` icon, or equivalently, type `C-c C-d`.
-- When a Theorem/Lemma/Example, etc., is finished, the connection between PG and Traf is closed. When you start proving next Theorem, invoke Traf again.
+## Usage
+
+- While proving by using Proof General, you can invoke Traf by clicking "prooftree icon", or equivalently, type `C-c C-d` (`proof-tree-external-display-toggle`).
+- When a Theorem (or Lemma, Example, etc.) is finished, the connection between PG and Traf is closed. When you start proving next Theorem, invoke Traf again.

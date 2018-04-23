@@ -5,32 +5,6 @@
 
 (* used in input.ml --------------------------------------- *)
 
-let sequent_string = ref "initial";;
-let existential_string = ref "existential";;
-
-type tflag = TfInit | TfProofName | TfCommand 
-             | TfSequentText | TfExistential | TfAdditionalId
-
-let traf_flag = ref TfInit 
-
-let save_sequent_text_or_existential_info s =
-  match !traf_flag with
-  | TfProofName -> ()
-  | TfCommand -> ()
-  | TfSequentText -> sequent_string := s
-  | TfExistential -> existential_string := s
-  | TfAdditionalId -> ()
-  | TfInit -> ()
-
-let save_parsing_state s =
-  if s = "proof_name" then traf_flag := TfProofName
-  else if s = "command" then traf_flag := TfCommand
-  else if s = "sequent_text" then traf_flag := TfSequentText
-  else if s = "existential" then traf_flag := TfExistential
-  else if s = "additianal_id" then traf_flag := TfAdditionalId
-  else traf_flag := TfInit
-
-
 let search_string_pos source search =
   try
     Str.search_forward (Str.regexp search) source 0
