@@ -1,6 +1,23 @@
 diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
 *** prooftree-0.13/Makefile.in	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/Makefile.in	2018-04-23 16:22:46.000000000 +0900
+--- traf-0.1/Makefile.in	2018-04-23 22:39:04.000000000 +0900
+***************
+*** 42,48 ****
+  
+  # Should be ``prooftree.opt'' if you have ocamlopt.opt available.
+  # Should be ``prooftree.byte'' if you only have ocamlc.
+! prooftree: @PROOFTREE@
+  
+  # ocaml compiler: should be ``ocamlopt.opt'' if available, ``ocamlc'' otherwise
+  OCAMLC:=@OCAMLC@
+--- 42,48 ----
+  
+  # Should be ``prooftree.opt'' if you have ocamlopt.opt available.
+  # Should be ``prooftree.byte'' if you only have ocamlc.
+! traf: @PROOFTREE@
+  
+  # ocaml compiler: should be ``ocamlopt.opt'' if available, ``ocamlc'' otherwise
+  OCAMLC:=@OCAMLC@
 ***************
 *** 75,80 ****
 --- 75,82 ----
@@ -530,7 +547,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
        drag_accel_adjustment; default_size_width_adjustment; 
 diff -c prooftree-0.13/configure traf-0.1/configure
 *** prooftree-0.13/configure	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/configure	2018-04-23 16:24:21.000000000 +0900
+--- traf-0.1/configure	2018-04-23 22:36:01.000000000 +0900
 ***************
 *** 121,129 ****
   check_lablgtk () {
@@ -546,9 +563,9 @@ diff -c prooftree-0.13/configure traf-0.1/configure
   check_lablgtk () {
       echo test $ocamlc -I $1
       if [ $native = "true" ] ; then
-! 	$ocamlc -o /dev/null -I $1 lablgtk.cmxa gtkInit.cmx >& /dev/null
+! 	($ocamlc -o /dev/null -I $1 lablgtk.cmxa gtkInit.cmx 2>&1) > /dev/null
       else
-! 	$ocamlc -o /dev/null -I $1 lablgtk.cma gtkInit.cmo >& /dev/null
+! 	($ocamlc -o /dev/null -I $1 lablgtk.cma gtkInit.cmo 2>&1) > /dev/null
       fi
   }
   
@@ -2553,7 +2570,6 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
     top_window#show ();
     if geometry_string <> "" then
       ignore(top_window#parse_geometry geometry_string);
-Only in traf-0.1: prooftree-to-traf.patch
 Common subdirectories: prooftree-0.13/test and traf-0.1/test
 Only in traf-0.1: traf_aux.ml
 diff -c prooftree-0.13/tree_layers.ml traf-0.1/tree_layers.ml
