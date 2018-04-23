@@ -1,6 +1,6 @@
 diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
 *** prooftree-0.13/Makefile.in	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/Makefile.in	2018-04-23 22:39:04.000000000 +0900
+--- traf-0.1/Makefile.in	2018-04-23 23:13:27.000000000 +0900
 ***************
 *** 42,48 ****
   
@@ -56,6 +56,44 @@ diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
   
   .PHONY: prooftree.byte
   prooftree.byte: $(CMO_OBJECTS)
+***************
+*** 153,168 ****
+  doc: dump.odoc-dump
+  	rm -rf doc
+  	mkdir doc
+  	$(OCAMLDOC) -I $(LABLGTKDIR) -d doc \
+- 		-g $(ODOC_XREF) -libxref lablgtk $(LABLGTKURL) \
+  		-inv-merge-ml-mli -m A -load dump.odoc-dump
+! 	$(OCAMLDOC) -I $(LABLGTKURL) -dot -dot-reduce \
+! 		-o doc/dependencies.dot -load dump.odoc-dump
+! 	dot -Tps doc/dependencies.dot > doc/dependencies.ps
+! 
+! .PHONY: check-doc
+! check-doc: dump.odoc-dump
+! 	$(OCAMLDOC) -g $(ODOC_CHECK) -load dump.odoc-dump -check-all fcd
+  
+  clean:
+  	rm -f $(TOCLEAN)
+--- 155,173 ----
+  doc: dump.odoc-dump
+  	rm -rf doc
+  	mkdir doc
++ #	$(OCAMLDOC) -I $(LABLGTKDIR) -d doc \
++ #		-g $(ODOC_XREF) -libxref lablgtk $(LABLGTKURL) \
++ #		-inv-merge-ml-mli -m A -load dump.odoc-dump
+  	$(OCAMLDOC) -I $(LABLGTKDIR) -d doc \
+  		-inv-merge-ml-mli -m A -load dump.odoc-dump
+! 	$(OCAMLDOC) -load dump.odoc-dump -d doc/ -html
+! #	$(OCAMLDOC) -I $(LABLGTKURL) -dot -dot-reduce \
+! #		-o doc/dependencies.dot -load dump.odoc-dump
+! #	dot -Tps doc/dependencies.dot > doc/dependencies.ps
+! 
+! #.PHONY: check-doc
+! #check-doc: dump.odoc-dump
+! #	$(OCAMLDOC) -g $(ODOC_CHECK) -load dump.odoc-dump -check-all fcd
+  
+  clean:
+  	rm -f $(TOCLEAN)
 diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
 *** prooftree-0.13/about_window.ml	2017-01-03 19:35:43.000000000 +0900
 --- traf-0.1/about_window.ml	2018-04-23 16:21:10.000000000 +0900
