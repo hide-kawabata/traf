@@ -23,12 +23,13 @@ Install following programs to build Traf.
     ```
     $ tar zxfv prooftree-0.13.tar.gz
     ```
+The above command creates a directory named `prooftree-0.13`.
 
 
-2. Put additional files and a patch file in the directory.
+2. Put additional files and a patch file in src into `prooftree-0.13` directory.
 
     ```
-    $ tar zxfv traf-0.1-patch.tar.gz
+    $ cp <files in src> ./prooftree-0.13
     ```
 
 3. Apply the patch for Traf.
