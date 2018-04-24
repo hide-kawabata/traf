@@ -184,7 +184,7 @@ diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
   	  (* ~destroy_with_parent:bool -> *)
 diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
 *** prooftree-0.13/configuration.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/configuration.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1/configuration.ml	2018-04-24 18:38:28.000000000 +0900
 ***************
 *** 42,48 ****
   let config_file_location = 
@@ -331,7 +331,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
   (** The complete ASCII header of configuration files. *)
   let config_file_header = config_file_header_start ^ config_file_version ^ "\n"
 ***************
-*** 501,514 ****
+*** 501,517 ****
         (* print_endline "after read"; *)
         res
       with
@@ -343,10 +343,13 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
 !                Using default configuration.")
 ! 	  `WARNING;
 ! 	None
-        | _ -> 
-  	print_endline "other error";
-  	None
---- 501,521 ----
+!       | _ -> 
+! 	print_endline "other error";
+! 	None
+    in
+    match copt with
+      | None -> ()
+--- 501,534 ----
         (* print_endline "after read"; *)
         res
       with
@@ -362,12 +365,25 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
 !          end
 !        else
 !          begin
-! 	   print_endline "other error";
+! 	   print_endline "Failure: ";
+! 	   print_endline str;
 !            None
 !          end
-        | _ -> 
-  	print_endline "other error";
-  	None
+!     | Sys_error str -> 
+!        if str = config_file_location ^ ": No such file or directory" then 
+!          ()
+!        else begin
+! 	   print_endline "Sys_error: ";
+! 	   print_endline str;
+!          end;
+!        None
+!     | _ -> 
+!        print_endline "other error.";
+!        None
+! 
+    in
+    match copt with
+      | None -> ()
 ***************
 *** 605,611 ****
     top_window
@@ -377,7 +393,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
     proof_tree_sep_adjustment
     subtree_sep_adjustment
     command_length_adjustment
---- 612,618 ----
+--- 622,628 ----
     top_window
     line_width_adjustment
     turnstile_size_adjustment
@@ -394,7 +410,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       proof_tree_sep_adjustment#set_value (float_of_int conf.proof_tree_sep);
       command_length_adjustment#set_value (float_of_int conf.proof_command_length);
       level_dist_adjustment#set_value (float_of_int conf.level_distance);
---- 665,671 ----
+--- 675,681 ----
       line_width_adjustment#set_value (float_of_int conf.turnstile_line_width);
       turnstile_size_adjustment#set_value (float_of_int conf.turnstile_radius);
       subtree_sep_adjustment#set_value (float_of_int conf.subtree_sep);
@@ -411,7 +427,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
         proof_tree_sep = round_to_int proof_tree_sep_adjustment#value;
         subtree_sep = round_to_int subtree_sep_adjustment#value;
         proof_command_length = round_to_int command_length_adjustment#value;
---- 761,768 ----
+--- 771,778 ----
       let c = {
         turnstile_line_width = round_to_int line_width_adjustment#value;
         turnstile_radius = round_to_int turnstile_size_adjustment#value;
@@ -447,7 +463,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
   	let backtrace = Printexc.get_backtrace () in
   	let buf = Buffer.create 4095 in
   	let print_backtrace = ref !current_config.debug_mode in
---- 926,932 ----
+--- 936,942 ----
         current configuration and update this dialog accordingly.
     *)
     method restore () = 
@@ -457,7 +473,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
   	let print_backtrace = ref !current_config.debug_mode in
 ***************
 *** 959,964 ****
---- 949,979 ----
+--- 959,989 ----
   	prerr_endline (Buffer.contents buf);
   	run_message_dialog (Buffer.contents buf) `WARNING;
   	()
@@ -498,7 +514,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       ~xpad:10 ~ypad:10
       ~packing:top_v_box#pack () in
   
---- 1010,1016 ----
+--- 1020,1026 ----
     let top_window = GWindow.window () in
     let top_v_box = GPack.vbox ~packing:top_window#add () in
     let _config_title = GMisc.label
@@ -518,7 +534,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       ~packing:(tree_frame_table#attach ~left:0 ~top:1) () in
     let turnstile_size_spinner = GEdit.spin_button
       ~digits:0 ~numeric:true
---- 1056,1069 ----
+--- 1066,1079 ----
   
     (* turnstile radius *)
     let turnstile_size_tooltip = 
@@ -545,7 +561,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       ~packing:(tree_frame_table#attach ~left:0 ~top:2) () in
     let line_sep_spinner = GEdit.spin_button
       ~digits:0 ~numeric:true
---- 1076,1088 ----
+--- 1086,1098 ----
     turnstile_size_spinner#misc#set_tooltip_text turnstile_size_tooltip;
   
     (* line_sep *)
@@ -561,7 +577,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
       ~digits:0 ~numeric:true
 ***************
 *** 1071,1076 ****
---- 1093,1099 ----
+--- 1103,1109 ----
       (float_of_int current_config.line_sep);
     line_sep_label#misc#set_tooltip_text line_sep_tooltip;
     line_sep_spinner#misc#set_tooltip_text line_sep_tooltip;
@@ -578,7 +594,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
         proof_tree_sep_adjustment
         subtree_sep_adjustment
         command_length_adjustment
---- 1579,1585 ----
+--- 1589,1595 ----
         top_window 
         line_width_adjustment
         turnstile_size_adjustment
@@ -595,7 +611,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
   	proof_tree_sep_label#misc; proof_tree_sep_spinner#misc;
   	subtree_sep_label#misc; subtree_sep_spinner#misc;
   	command_length_label#misc; command_length_spinner#misc;
---- 1608,1614 ----
+--- 1618,1624 ----
         tee_file_name_entry
         [ line_width_label#misc; line_width_spinner#misc;
   	turnstile_size_label#misc; turnstile_size_spinner#misc;
@@ -616,7 +632,7 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
        proof_tree_sep_adjustment; subtree_sep_adjustment; 
        command_length_adjustment; level_dist_adjustment; layer_sep_adjustment;
        drag_accel_adjustment; default_size_width_adjustment; 
---- 1639,1650 ----
+--- 1649,1660 ----
         ]
     in
   
