@@ -4,8 +4,6 @@ Traf is a proof tree viewer which cooperate with a proof assistant Coq and contr
 
 Traf is an extention to a proof tree viewer named Prooftree. Traf version 0.1 is based on Prooftree-0.13.
 
-[//]: # (![demo](https://raw.github.com/wiki/hide-kawabata/traf/images/p_or_q_q_or_p.png))
-[//]: # (![demo](https://raw.github.com/wiki/hide-kawabata/traf/images/emacs_p_or_q_q_or_p.png))
 
 <img src="https://raw.github.com/wiki/hide-kawabata/traf/images/emacs_p_or_q_q_or_p.png" width="300"/>
 <img src="https://raw.github.com/wiki/hide-kawabata/traf/images/p_or_q_q_or_p.png" width="350"/>
