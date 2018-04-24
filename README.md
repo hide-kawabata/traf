@@ -4,7 +4,16 @@ Traf is a proof tree viewer which cooperate with a proof assistant Coq and contr
 
 Traf is an extention to a proof tree viewer named Prooftree. Traf version 0.1 is based on Prooftree-0.13.
 
+[//]: # (![demo](https://raw.github.com/wiki/hide-kawabata/traf/images/p_or_q_q_or_p.png))
+[//]: # (![demo](https://raw.github.com/wiki/hide-kawabata/traf/images/emacs_p_or_q_q_or_p.png))
+
+<img src="https://raw.github.com/wiki/hide-kawabata/traf/images/emacs_p_or_q_q_or_p.png" width="300"/>
+<img src="https://raw.github.com/wiki/hide-kawabata/traf/images/p_or_q_q_or_p.png" width="350"/>
+
+
+
 Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Yuuki Sasaki and Mai Kimura, at Hiroshima City University.
+
 
 
 ## Preparation
@@ -34,7 +43,7 @@ My Mac always suffered from it.
 A quick workaround is to rewrite `src/ml_gdk.c` of lablgtk2 by applying the supplemental patch in `misc` directory, and recompile the library.
 
     $ cd /shomewhere/lablgtk-2.18.5/src
-    $ patch -p1 < patch_file_for_lablgtk2
+    $ patch -p1 < traf_top_dir/misc/lablgtk2.patch
 
 
 
@@ -45,25 +54,30 @@ By running `misc/quich_build.sh` at the top directory,
 you can obtain the executable `traf` in newly created directory `build`.
 What is done in the process is to follow the instructions shown below:
 
-1. Obtain `prooftree-0.13.tar.gz` and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in `misc` directory.
+1. Obtain `prooftree-0.13.tar.gz` and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in the directory `misc`.
 
     ```
     $ tar zxfv prooftree-0.13.tar.gz
     ```
     The above command creates a directory named `prooftree-0.13`.
-
-
-2. Put additional files and a patch file in `src` into `prooftree-0.13`.
+    Let's rename it `build`.
 
     ```
-    $ cp <files in src> ./prooftree-0.13/
+    $ mv prooftree-0.13 build
+    ```
+
+
+2. Put additional files and a patch file in `src` into `build`.
+
+    ```
+    $ cp ./src/* ./build/
     ```
 
 3. Apply the patch for Traf.
   
     ```
-    $ cd prooftree-0.13
-    $ patch -p1 < the_patch_file
+    $ cd build
+    $ patch -p1 < prooftree-to-traf.patch
     ```
 
 4. Build.
@@ -72,8 +86,8 @@ What is done in the process is to follow the instructions shown below:
     $ ./configure
     $ make
     ```
-    You will have `traf` in the current directory.
-    You can copy it anywhere. Typing `make install` to install traf in a public area.
+    You will have `traf` in the current directory, i.e., `build`.
+    You can copy it anywhere. If you want, type `make install` to install traf in a public area.
 
 
 ## Settings
