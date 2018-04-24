@@ -585,11 +585,13 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
        drag_accel_adjustment; default_size_width_adjustment; 
 diff -c prooftree-0.13/configure traf-0.1/configure
 *** prooftree-0.13/configure	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/configure	2018-04-23 22:36:01.000000000 +0900
+--- traf-0.1/configure	2018-04-24 10:54:55.000000000 +0900
 ***************
-*** 121,129 ****
+*** 119,144 ****
+  
+  # check for lablgtk
   check_lablgtk () {
-      echo test $ocamlc -I $1
+!     echo test $ocamlc -I $1
       if [ $native = "true" ] ; then
 ! 	$ocamlc -o /dev/null -I $1 lablgtk.cmxa gtkInit.cmx
       else
@@ -597,9 +599,26 @@ diff -c prooftree-0.13/configure traf-0.1/configure
       fi
   }
   
---- 121,129 ----
+  if check_lablgtk "+lablgtk2" ; then
+      lablgtkdir="+lablgtk2"
+! elif ocamlfind query lablgtk2 > /dev/null ; then
+!     lablgtkdir=$(ocamlfind query lablgtk2)
+!     if check_lablgtk $lablgtkdir ; then
+! 	true
+      else
+  	lablgtkdir=""
+      fi
+  fi
+  
+! if [ $lablgtkdir = "" ] ; then
+      echo library LablGtk not found. Please install package liblablgtk2-ocaml-dev.
+      exit 1
+  fi
+--- 119,152 ----
+  
+  # check for lablgtk
   check_lablgtk () {
-      echo test $ocamlc -I $1
+!     printf "test $ocamlc -I $1"
       if [ $native = "true" ] ; then
 ! 	($ocamlc -o /dev/null -I $1 lablgtk.cmxa gtkInit.cmx 2>&1) > /dev/null
       else
@@ -607,6 +626,29 @@ diff -c prooftree-0.13/configure traf-0.1/configure
       fi
   }
   
+  if check_lablgtk "+lablgtk2" ; then
++     echo "   ... OK. +lablgtk2 works."
+      lablgtkdir="+lablgtk2"
+! else
+!     echo "   ... NO."
+!     if (ocamlfind query lablgtk2 2>&1) > /dev/null ; then
+! 	lablgtkdir=$(ocamlfind query lablgtk2)
+! 	if check_lablgtk $lablgtkdir ; then
+! 	    echo "   ... OK."
+! 	    true
+! 	else
+! 	    lablgtkdir=""
+! 	fi
+      else
++ 	echo "trying ocamlfind   ... NO."
+  	lablgtkdir=""
+      fi
+  fi
+  
+! if [ X$lablgtkdir = X"" ] ; then
+      echo library LablGtk not found. Please install package liblablgtk2-ocaml-dev.
+      exit 1
+  fi
 Only in traf-0.1: conv_latex.ml
 diff -c prooftree-0.13/coq.ml traf-0.1/coq.ml
 *** prooftree-0.13/coq.ml	2017-01-03 19:35:43.000000000 +0900
