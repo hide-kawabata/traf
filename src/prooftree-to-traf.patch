@@ -184,7 +184,7 @@ diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
   	  (* ~destroy_with_parent:bool -> *)
 diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
 *** prooftree-0.13/configuration.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/configuration.ml	2018-04-24 18:38:28.000000000 +0900
+--- traf-0.1/configuration.ml	2018-04-24 18:53:41.000000000 +0900
 ***************
 *** 42,48 ****
   let config_file_location = 
@@ -370,8 +370,8 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
 !            None
 !          end
 !     | Sys_error str -> 
-!        if str = config_file_location ^ ": No such file or directory" then 
-!          ()
+!        if Traf_aux.search_string_pos str (config_file_location ^ ":") >= 0 then
+!          () (* likely to be "No such file or directory" *)
 !        else begin
 ! 	   print_endline "Sys_error: ";
 ! 	   print_endline str;
