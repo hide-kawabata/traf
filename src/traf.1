@@ -1,0 +1,262 @@
+.\" groff -man -Tascii traf.1
+.\"
+.TH TRAF 1 "April 2018" TRAF "User Manuals"
+.SH NAME
+traf \- detailed proof-tree display for Proof General
+.SH SYNOPSIS
+.B traf \fR[\fIOptions...\fR]
+.SH DESCRIPTION
+.\" ============= paragraph general purpose ===================================
+.B Traf
+is a proof tree viewer which cooperate with a proof assistant
+.B Coq
+and controlled through
+.B Proof General (PG).
+You are not required to obtain any knowledge to use
+.B Traf.
+You do not have to pay attention to it while proving lemmas by using
+.B PG.
+.B Traf
+automatically draws a proof tree corresponding to what you have
+done while you are interacting with
+.B Coq 
+through
+.B PG.
+The trees drawn by
+.B Traf
+are informative and will be of great help.
+.P
+.B Traf
+is an extention to a proof tree viewer named
+.B Prooftree.
+.B Traf
+version 0.1 is based on 
+.B Prooftree
+version 0.13.
+Contents in this document is basically the same as 
+.B Prooftree's
+manual.
+.\"
+.\" ==========================================================================
+.\" ================ Options =================================================
+.\" ==========================================================================
+.\"
+.SH OPTIONS
+.\" ======================================= -help ============================
+.IP "-help"
+Print synopsis and exit.
+.\" ======================================= -config ==========================
+.IP "-config"
+Open the configuration dialog on startup (if you want to change
+the configuration without starting 
+.B Proof General\fR).
+.\" ======================================= -geometry ========================
+.IP "-geometry \fIspec\fR"
+Sets the X geometry of the main window.
+.I spec
+is a standard X geometry string in the form 
+\fIxpos\fRx\fIypos\fR[+\fIxoff\fR[+\fIyoff\fR]].
+.\" ======================================= -tee =============================
+.IP "-tee \fIfile\fR"
+Write all input to
+.I file
+(usually for debugging purposes).
+.\" ======================================= -debug ===========================
+.IP "-debug"
+Provide more details on errors.
+.\" ======================================= -help-dialog =====================
+.IP "-help-dialog"
+Open the help dialog on startup. Mainly useful for proofreading
+the help text.
+.\"
+.\" ==========================================================================
+.\" ================ Main Window =============================================
+.\" ==========================================================================
+.\"
+.SH MAIN PROOF DISPLAY
+.B Traf
+opens one window for each proof that it is requested to display.
+This window contains the proof-tree graph and a small display for
+sequents and proof commands. 
+.\" ==========================================================================
+.SS Colors
+The branches in the proof-tree graph are colored
+according to their state. 
+.B Traf
+distinguishes between the following states.
+.IP "current (blue by default)"
+The current branch is the branch from the root of the proof tree
+to the current goal.
+.IP "unproven (default foreground color)"
+A branch is unproven if it contains open proof goals.
+.IP "proved incomplete (cyan by default)"
+An incompletely proved branch has its proof finished, but some of
+the existential variables that have been introduced in this
+branch are not (yet) instantiated.
+.IP "proved partially (dark green by default)"
+In a partially proved branch all existential variables of the
+branch itself are instantiated, but some of those instantiations
+contain existential variables that are not (yet) instantiated.
+.IP "proved complete (green by default)"
+A branch is proved complete if all its existential variables are
+instantiated with terms that themselves do not contain any
+existential variables.
+.IP "cheated (red by default)"
+A cheated branch contains a cheating proof command, such as 
+.I admit\f.
+.P
+The colors as well as many other
+.B Traf
+parameters can be changed in the 
+.B Traf Configuration Dialog
+(see below). 
+.\" ==========================================================================
+.SS Navigation
+When the proof tree grows large one can navigate by a variety of
+means. 
+As well as scroll bars, the usual keys can be used to move the proof tree.
+.\" ==========================================================================
+.SS Tool Tips
+Abbreviated proof commands and sequents are shown in full as
+tool tips when the mouse pointer rests over them. Both, the tool
+tips for abbreviated proof commands and for sequents can be
+independently switched off in the
+.B Traf Configuration Dialog\fR.
+The length at which proof commands are abbreviated can be
+configured as well.
+.\" ==========================================================================
+.SS Main Menu
+The
+.I Menu
+button displays the main menu. The 
+.I Clone
+item clones the current proof tree in an additional window. This
+additional window continues to display a snapshot of the cloned
+proof tree, no matter what happens with the original proof.
+.\" ==========================================================================
+.P
+The 
+.I Show current
+and
+.I Show selected
+items move the viewport of the proof tree such that the current
+proof goal, or, respectively, the selected node will be visible
+(if they exist).
+.\" ==========================================================================
+.P
+The
+.I Exit
+item terminates 
+.B Traf
+and closes all proof-tree displays.
+.\" ==========================================================================
+.P
+The remaining three items display, respectively, the
+.B Traf Configuration Dialog\fR,
+and the 
+.B Help
+and 
+.B About
+windows.
+.\"
+.\" ==========================================================================
+.\" ================ Configuration ===========================================
+.\" ==========================================================================
+.\"
+.SH CONFIGURATION
+.SS Traf Configuration Dialog
+The 
+.I Save 
+button stores the current configuration (as marshaled 
+.B OCaml
+record) in 
+.I ~/.traf\fR,
+which will overwrite the built-in default configuration for the
+following 
+.B Traf
+runs. The 
+.I Revert
+button loads and applies the saved configuration.
+The
+.I Cancel
+and
+.I OK
+buttons close the dialog, but
+.I Cancel
+additionally resets the configuration to the state before the
+start of the dialog. To avoid opening partial file names, the
+.I Log Proof General input
+check box is deactivated when typing the log file name.
+.\" ==========================================================================
+.SS Proof General Customization
+The location of the 
+.B Traf
+executable and the command line arguments are in the
+customization group
+.I proof-tree\fR.
+Prover specific points, such as the regular expressions for
+navigation and cheating commands are in the customization group
+.I proof-tree-internals\fR.
+To visit a customization group, type 
+.I M-x customize-group
+followed by the name of the customization group inside 
+.B Proof General\fR.
+.\"
+.\" ==========================================================================
+.\" ================ Limitations =============================================
+.\" ==========================================================================
+.\"
+.SH LIMITATIONS
+Currently, information on existential variables are not obtained properly.
+.\"
+.\" ==========================================================================
+.\" ================ Prerequisites ===========================================
+.\" ==========================================================================
+.\"
+.SH PREREQUISITES
+This version of
+.B Traf
+requires
+.B Coq
+8.4beta or better
+and 
+.B Proof General
+4.3pre130327 or better.
+.\"
+.\" ==========================================================================
+.\" ================ Files ===================================================
+.\" ==========================================================================
+.\"
+.SH FILES
+.IP "~/.traf"
+Saved
+.B Traf
+configuration. Is loaded at application start-up for overwriting
+the built-in default configuration. Must contain a marshaled
+.B OCaml
+configuration record.
+.\"
+.\" ==========================================================================
+.\" ================ SEE ALSO ================================================
+.\" ==========================================================================
+.\"
+.SH SEE ALSO
+.TP
+The \fBProoftree\fR web page, \fIhttp://askra.de/software/prooftree/\fR
+.\"
+.\" ==========================================================================
+.\" ================ Credits =================================================
+.\" ==========================================================================
+.\"
+.SH CREDITS
+.B Traf
+is based on 
+.B Prooftree,
+which has been developed by Hendrik Tews <prooftree at askra.de>.
+.\"
+.\" ==========================================================================
+.\" ================ Author ==================================================
+.\" ==========================================================================
+.\"
+.SH AUTHOR
+Hideyuki Kawabata and Yuta Tanaka

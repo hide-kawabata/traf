@@ -39,20 +39,24 @@ A quick workaround is to rewrite `src/ml_gdk.c` of lablgtk2 by applying the supp
 
 
 
-## Installation
+## How to build
+
+By running `misc/quich_build.sh` at the top directory, 
+you can obtain the executable `traf` in newly created directory `build`.
+What is done in the process is to follow the instructions shown below:
 
 1. Obtain `prooftree-0.13.tar.gz` and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in `misc` directory.
 
     ```
     $ tar zxfv prooftree-0.13.tar.gz
     ```
-The above command creates a directory named `prooftree-0.13`.
+    The above command creates a directory named `prooftree-0.13`.
 
 
 2. Put additional files and a patch file in `src` into `prooftree-0.13`.
 
     ```
-    $ cp <files in src> ./prooftree-0.13
+    $ cp <files in src> ./prooftree-0.13/
     ```
 
 3. Apply the patch for Traf.
@@ -67,8 +71,10 @@ The above command creates a directory named `prooftree-0.13`.
     ```
     $ ./configure
     $ make
-    $ make install   <--- optional
     ```
+    You will have `traf` in the current directory.
+    You can copy it anywhere. Typing `make install` to install traf in a public area.
+
 
 ## Settings
 
