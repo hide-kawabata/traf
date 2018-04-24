@@ -51,10 +51,11 @@ The above command creates a directory named `prooftree-0.13`.
 
 Put following lines in `.emacs`.
 
-    (setq coq-prog-name "/somewhere/coqtop")
-    (setq proof-tree-program "traf")
-    (setq exec-path (cons "/where/traf/resides/" exec-path))
-    (load "/somewhere/pg/is/installed/generic/proof-site")
+    (setq coq-prog-name "/home/where/my/thoughts/escaping/coqtop")
+    (setq proof-tree-program "/home/where/my/musics/playing/traf")
+    (load "/home/where/my/love/lies/waiting/generic/proof-site")
+    
+Note that you can modify `exec-path` to make the values of `coq-prog-name` and `proof-tree-program` short.
 
 ## Usage
 
