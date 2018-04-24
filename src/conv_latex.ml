@@ -1,4 +1,10 @@
 (*
+ * Copyright (C) 2017 - 2018 Yuuki Sasaki and Hideyuki Kawabata
+ *
+ * This file is part of "traf".
+ *)
+
+(*
    This file includes the implementation of the functionality of LaTeX
    code generation.
    - class conv_latex

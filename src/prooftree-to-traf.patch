@@ -1,6 +1,12 @@
+(*
+ * Copyright (C) 2018 Hideyuki Kawabata
+ *
+ * This file is part of "traf".
+ *)
+
 diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
 *** prooftree-0.13/Makefile.in	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/Makefile.in	2018-04-23 23:13:27.000000000 +0900
+--- traf-0.1/Makefile.in	2018-04-24 16:55:34.000000000 +0900
 ***************
 *** 42,48 ****
   
@@ -57,6 +63,23 @@ diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
   .PHONY: prooftree.byte
   prooftree.byte: $(CMO_OBJECTS)
 ***************
+*** 141,147 ****
+  	mkdir -p $(DESTDIR)$(BINDIR)
+  	cp prooftree $(DESTDIR)$(BINDIR)
+  	mkdir -p $(DESTDIR)$(MANDIR)/man1
+! 	cp prooftree.1 $(DESTDIR)$(MANDIR)/man1
+  
+  
+  TOCLEAN+=dump.odoc-dump
+--- 143,149 ----
+  	mkdir -p $(DESTDIR)$(BINDIR)
+  	cp prooftree $(DESTDIR)$(BINDIR)
+  	mkdir -p $(DESTDIR)$(MANDIR)/man1
+! 	cp traf.1 $(DESTDIR)$(MANDIR)/man1
+  
+  
+  TOCLEAN+=dump.odoc-dump
+***************
 *** 153,168 ****
   doc: dump.odoc-dump
   	rm -rf doc
@@ -94,6 +117,29 @@ diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
   
   clean:
   	rm -f $(TOCLEAN)
+***************
+*** 171,180 ****
+  TAGS: $(SOURCES)
+  	otags $(SOURCES)
+  
+! prooftree.man.txt: prooftree.1
+  	nroff -man $< > $@
+  
+! prooftree.man.html: prooftree.1
+  	man2html $< | \
+  		tail -n +3 |\
+  		sed -e 's|<A HREF=".*Return to Main Contents</A>||' \
+--- 176,185 ----
+  TAGS: $(SOURCES)
+  	otags $(SOURCES)
+  
+! prooftree.man.txt: traf.1
+  	nroff -man $< > $@
+  
+! prooftree.man.html: traf.1
+  	man2html $< | \
+  		tail -n +3 |\
+  		sed -e 's|<A HREF=".*Return to Main Contents</A>||' \
 diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
 *** prooftree-0.13/about_window.ml	2017-01-03 19:35:43.000000000 +0900
 --- traf-0.1/about_window.ml	2018-04-23 16:21:10.000000000 +0900
@@ -1494,6 +1540,119 @@ diff -c prooftree-0.13/emacs_commands.ml traf-0.1/emacs_commands.ml
 ! let emacs_send_proof_script_in_current_goals script =
 !   emacs_long_callback "insert-proof-script-in-current-goals" script
 !     
+diff -c prooftree-0.13/help_window.ml traf-0.1/help_window.ml
+*** prooftree-0.13/help_window.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/help_window.ml	2018-04-24 16:45:21.000000000 +0900
+***************
+*** 61,67 ****
+--- 61,70 ----
+  
+  (** The help text *)
+  let help_text = 
++ (*
+    let bold_proof_tree = (Bold, "Prooftree") in
++  *)
++   let bold_proof_tree = (Bold, "Traf") in
+    let bold_proof_general = (Bold, "Proof General")
+    in
+    (**************************************************************************)
+***************
+*** 71,83 ****
+--- 74,92 ----
+     (Default, "\n\nThe meaning of the colors in the proof tree is as follows: ");
+     (Color !proved_complete_gdk_color, 
+      "completely proved branches (green by default), ");
++ (*
+     (Color !proved_incomplete_gdk_color,
+      "proved branches with some not (yet) instantiated existential variables \
+  (cyan by default), ");
++  *)
+     (Color !proved_partial_gdk_color,
++ (*
+      "proved branches with all their own existential variables instantiated \
+  that nevertheless depend on some not (yet) instantiated existential variable \
+  (dark green by default), ");
++  *)
++     "proved branches  \
++ (dark green by default), ");
+     (Color !current_gdk_color, "branch to the current goal (blue by default), ");
+     (Default, "currently open branches (default foreground color) and ");
+     (Color !cheated_gdk_color, 
+***************
+*** 101,106 ****
+--- 110,116 ----
+  the proof tree instead (i.e, the proof tree moves in the same \
+  direction as the mouse).\n\
+  \n");
++ (* --------------
+     (*************************************************************************)
+     (***************************** Sequent window ****************************)
+     (*************************************************************************)
+***************
+*** 123,128 ****
+--- 133,139 ----
+  display is neither automatically updated nor automatically deleted.\n\
+  \n\
+  ");
++ -------------- *)
+     (*************************************************************************)
+     (***************************** Tooltips **********************************)
+     (*************************************************************************)
+***************
+*** 137,142 ****
+--- 148,154 ----
+  Any truncated proof command is displayed in full length as tool tip if the \
+  mouse stays long enough above it (and if command tool tips are enabled).\n\
+  \n");
++ (* ------------------
+     (*************************************************************************)
+     (***************************** Existentials ******************************)
+     (*************************************************************************)
+***************
+*** 180,185 ****
+--- 192,198 ----
+     (Bold, "Coq");
+     (Default, " bug 4504.\n\
+  \n");
++ --------------- *)
+     (*************************************************************************)
+     (***************************** Menus *************************************)
+     (*************************************************************************)
+***************
+*** 189,194 ****
+--- 202,208 ----
+  which contains some additional items. \n\
+  \n\
+  The item ");
++ (* -------------
+     (Italic, "Undo to point");
+     (Default, ", which is only active over a sequent node in the proof \
+  tree display, sends an appropriate retract command to ");
+***************
+*** 205,210 ****
+--- 219,225 ----
+  proof commands of the selected subtree, at point in the selected buffer.\n\
+  \n\
+  The ");
++ ---------- *)
+     (Italic, "Clone");
+     (Default, " menu item clones the current proof tree in a separate \
+  proof tree window. This cloned proof tree is not connected with ");
+***************
+*** 219,228 ****
+--- 234,245 ----
+  current proof goal or, respectively, the selected node is visible.\n\
+  \n\
+  The item ");
++ (* ----------
+     (Italic, "Existentials");
+     (Default, " opens the dialog for existential variables, see above.\n\
+  \n\
+  The ");
++ ------- *)
+     (Italic, "Configuration");
+     (Default, " item displays the configuration dialog. Changes in this dialog \
+  immediately take effect. In this dialog, the ");
 diff -c prooftree-0.13/input.ml traf-0.1/input.ml
 *** prooftree-0.13/input.ml	2017-01-03 19:35:43.000000000 +0900
 --- traf-0.1/input.ml	2018-04-23 16:21:10.000000000 +0900
@@ -1707,6 +1866,57 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     Scanf.sscanf first_line "second line %3d\n"
       (fun second_line_len ->
         (* Printf.fprintf (debugc()) "second line cont %d\n%!" second_line_len; *)
+diff -c prooftree-0.13/main.ml traf-0.1/main.ml
+*** prooftree-0.13/main.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/main.ml	2018-04-24 17:35:32.000000000 +0900
+***************
+*** 97,110 ****
+  *)
+  let main () =
+    try_load_config_file ();
+!   Arg.parse arguments anon_fun "prooftree";
+    (try
+       setup_input();
+     with
+       | Log_input_file_error msg ->
+         run_message_dialog
+  	 (Printf.sprintf 
+! 	    "Prooftree startup error: Opening the input logging file \
+               failed with:\n    %s\nDisabeling input logging."
+  	    msg)
+  	 `WARNING;
+--- 97,110 ----
+  *)
+  let main () =
+    try_load_config_file ();
+!   Arg.parse arguments anon_fun "traf";
+    (try
+       setup_input();
+     with
+       | Log_input_file_error msg ->
+         run_message_dialog
+  	 (Printf.sprintf 
+! 	    "Traf startup error: Opening the input logging file \
+               failed with:\n    %s\nDisabeling input logging."
+  	    msg)
+  	 `WARNING;
+***************
+*** 112,118 ****
+         setup_input()
+    );
+    Printf.printf 
+!     ("Prooftree version %s awaiting input on stdin.\n" ^^
+  	"Entering LablGTK main loop ...\n\n%!")
+      Version.version;
+    if !start_config_dialog then
+--- 112,118 ----
+         setup_input()
+    );
+    Printf.printf 
+!     ("Traf version %s awaiting input on stdin.\n" ^^
+  	"Entering LablGTK main loop ...\n\n%!")
+      Version.version;
+    if !start_config_dialog then
 diff -c prooftree-0.13/proof_tree.ml traf-0.1/proof_tree.ml
 *** prooftree-0.13/proof_tree.ml	2017-01-03 19:35:43.000000000 +0900
 --- traf-0.1/proof_tree.ml	2018-04-23 16:21:10.000000000 +0900
@@ -2651,6 +2861,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
     if geometry_string <> "" then
       ignore(top_window#parse_geometry geometry_string);
 Common subdirectories: prooftree-0.13/test and traf-0.1/test
+Only in traf-0.1: traf.1
 Only in traf-0.1: traf_aux.ml
 diff -c prooftree-0.13/tree_layers.ml traf-0.1/tree_layers.ml
 *** prooftree-0.13/tree_layers.ml	2017-01-03 19:35:43.000000000 +0900
@@ -2773,3 +2984,11 @@ diff -c prooftree-0.13/util.ml traf-0.1/util.ml
 !       let c = open_out (homedir () ^ "/.traf-debug") in
         copt := Some c;
         c
+diff -c prooftree-0.13/version.txt traf-0.1/version.txt
+*** prooftree-0.13/version.txt	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1/version.txt	2018-04-24 17:34:33.000000000 +0900
+***************
+*** 1 ****
+! 0.13
+--- 1 ----
+! 0.1

@@ -1,5 +1,7 @@
 (*
-  Additional materials for Traf
+ * Copyright (C) 2016 - 2018 Yuta Tanaka and Hideyuki Kawabata
+ *
+ * This file is part of "traf".
  *)
 
 
