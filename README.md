@@ -55,7 +55,8 @@ What is done in the process is to follow the instructions shown below:
 1. Obtain `prooftree-0.13.tar.gz` and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in the directory `misc`.
 
     ```
-    $ tar zxfv prooftree-0.13.tar.gz
+    $ cd traf_top_dir
+    $ tar zxfv ./misc/prooftree-0.13.tar.gz
     ```
     The above command creates a directory named `prooftree-0.13`.
     Let's rename it `build`.
