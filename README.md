@@ -82,5 +82,7 @@ Note that you can modify `exec-path` to make the values of `coq-prog-name` and `
 
 ## Usage
 
-- While proving by using Proof General, you can invoke Traf by clicking the "prooftree icon", or equivalently, type `C-c C-d` (`proof-tree-external-display-toggle`).
-- When a Theorem (or Lemma, Example, etc.) is finished, the connection between PG and Traf is closed. When you start proving next Theorem, invoke Traf again.
+- While proving a theorem by using Proof General, you can invoke Traf by clicking the "prooftree icon", or equivalently, type `C-c C-d` (`proof-tree-external-display-toggle`).
+- You can perform anything while proving with PG; `C-c RET (proof-goto-point)`, `C-c C-u (proof-undo-last-successful-command)`, etc. The proof tree shown in the Traf window changes synchronously.
+- Once a proof of a theorem (`Theorem`, `Lemma`, `Example`, whatever) is finished, i.e., the vernacular command `Qed` is given to Coq, the connection between PG and Traf is closed (but the Traf window remains on the screen and you can manipulate it).
+When you start proving next Theorem, you are required to invoke Traf again (by entering `C-c C-d`).
