@@ -9,16 +9,39 @@ Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Y
 
 ## Preparation
 
-Install following programs to build Traf.
+Following programs are required to build and run Traf.
+Older versions of them might requrie some modification on the library and/or Traf's source.
 
 - Coq 8.4 or 8.6 (8.7 is not supported yet)
-- Proof General 4.4.1pre (older versions such as ver 3 can be used but slight modification of PG is required)
-- Lablgtk 2.18.5
+- Proof General 4.4.1pre
+- GTK+ 2.0
+- Lablgtk 2.18.5 (Note: on Mac, you might need to recompile the library; see below.)
 - OCaml 4.05.0
+
+Checked environments: 
+
+- macOS Sierra 10.12.6
+- ubuntu 16.04 LTS.
+
+### Note for Mac (?)
+
+Lablgtk2 2.18.5 seems to require fixes.
+It seems that `ml_gdk_gc_get_values()` in `ml_gdk.c` sometimes return an unacceptable (maybe uninitialized) set of values which cause exceptions.
+Although this phenomenon has not happened on my ubuntu machine,
+My Mac always suffered from it.
+
+
+A quick workaround is to rewrite `src/ml_gdk.c` of lablgtk2 by applying the supplemental patch in `misc` directory, and recompile the library.
+
+    $ cd /shomewhere/lablgtk-2.18.5/src
+    $ patch -p1 < patch_file_for_lablgtk2
+
+
+
 
 ## Installation
 
-1. Obtain prooftree-0.13.tar.gz and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in misc directory.
+1. Obtain `prooftree-0.13.tar.gz` and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in `misc` directory.
 
     ```
     $ tar zxfv prooftree-0.13.tar.gz
@@ -26,7 +49,7 @@ Install following programs to build Traf.
 The above command creates a directory named `prooftree-0.13`.
 
 
-2. Put additional files and a patch file in src into `prooftree-0.13` directory.
+2. Put additional files and a patch file in `src` into `prooftree-0.13`.
 
     ```
     $ cp <files in src> ./prooftree-0.13
@@ -59,5 +82,5 @@ Note that you can modify `exec-path` to make the values of `coq-prog-name` and `
 
 ## Usage
 
-- While proving by using Proof General, you can invoke Traf by clicking "prooftree icon", or equivalently, type `C-c C-d` (`proof-tree-external-display-toggle`).
+- While proving by using Proof General, you can invoke Traf by clicking the "prooftree icon", or equivalently, type `C-c C-d` (`proof-tree-external-display-toggle`).
 - When a Theorem (or Lemma, Example, etc.) is finished, the connection between PG and Traf is closed. When you start proving next Theorem, invoke Traf again.

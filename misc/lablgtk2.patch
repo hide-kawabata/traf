@@ -1,0 +1,23 @@
+*** src-orig/ml_gdk.c	2018-04-24 11:42:48.000000000 +0900
+--- src/ml_gdk.c	2018-04-24 11:41:10.000000000 +0900
+***************
+*** 658,664 ****
+      }
+      else
+        Store_field(ret, 7, Val_int(0));
+!     Field(ret,8) = Val_subwindow_mode(values.subwindow_mode);
+      Field(ret,9) = Val_int(values.ts_x_origin);
+      Field(ret,10) = Val_int(values.ts_y_origin);
+      Field(ret,11) = Val_int(values.clip_x_origin);
+--- 658,668 ----
+      }
+      else
+        Store_field(ret, 7, Val_int(0));
+!     if (values.subwindow_mode < 0 || values.subwindow_mode > 1) {
+!       Field(ret,8) = Val_subwindow_mode(0);
+!     } else {
+!       Field(ret,8) = Val_subwindow_mode(values.subwindow_mode);
+!     }
+      Field(ret,9) = Val_int(values.ts_x_origin);
+      Field(ret,10) = Val_int(values.ts_y_origin);
+      Field(ret,11) = Val_int(values.clip_x_origin);
