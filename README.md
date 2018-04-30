@@ -19,7 +19,7 @@ Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Y
 Following programs are required to build and run Traf.
 Older versions of them might requrie some modification on the library and/or Traf's source.
 
-- Coq 8.4 or 8.6 (8.7 is not supported yet)
+- Coq 8.4, 8.6, 8.7, 8.8
 - Proof General 4.4.1pre
 - GTK+ 2.0
 - Lablgtk 2.18.5 (Note: on Mac, you might need to recompile the library; see below.)
@@ -28,17 +28,17 @@ Older versions of them might requrie some modification on the library and/or Tra
 Checked environments: 
 
 - macOS Sierra 10.12.6
-- ubuntu 16.04 LTS.
+- ubuntu 16.04 LTS
 
 ### Note for Mac (?)
 
 Lablgtk2 2.18.5 seems to require fixes.
-It seems that `ml_gdk_gc_get_values()` in `ml_gdk.c` sometimes return an unacceptable (maybe uninitialized) set of values which cause exceptions.
+It seems that `ml_gdk_gc_get_values()` in `ml_gdk.c` sometimes return an unacceptable (maybe uninitialized) set of values which causes exceptions.
 Although this phenomenon has not happened on my ubuntu machine,
 My Mac always suffered from it.
 
 
-A quick workaround is to rewrite `src/ml_gdk.c` of lablgtk2 by applying the supplemental patch in `misc` directory, and recompile the library.
+A quick workaround is to rewrite `src/ml_gdk.c` of lablgtk2 by applying the supplemental patch in `misc`, and recompile the library.
 
     $ cd /shomewhere/lablgtk-2.18.5/src
     $ patch -p1 < traf_top_dir/misc/lablgtk2.patch
@@ -50,6 +50,8 @@ A quick workaround is to rewrite `src/ml_gdk.c` of lablgtk2 by applying the supp
 
 By running `misc/quich_build.sh` at the top directory, 
 you can obtain the executable `traf` in newly created directory `build`.
+You can copy `traf` anywhere to use it. 
+
 What is done in the process is to follow the instructions shown below:
 
 1. Obtain `prooftree-0.13.tar.gz` and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in the directory `misc`.
@@ -86,22 +88,32 @@ What is done in the process is to follow the instructions shown below:
     $ make
     ```
     You will have `traf` in the current directory, i.e., `build`.
-    You can copy it anywhere. If you want, type `make install` to install traf in a public area.
+    If you want, type `make install` to install traf in a public area.
+
 
 
 ## Settings
 
-Put following lines in `.emacs`.
+Put following lines in `.emacs` (the 2nd line only is related to Traf):
 
     (setq coq-prog-name "/home/where/my/thoughts/escaping/coqtop")
     (setq proof-tree-program "/home/where/my/musics/playing/traf")
     (load "/home/where/my/love/lies/waiting/generic/proof-site")
-    
-Note that you can modify `exec-path` to make the values of `coq-prog-name` and `proof-tree-program` short.
+
+- Note that you can modify `exec-path` to make the values of `coq-prog-name` and `proof-tree-program` short.
+
+- Note that you can not share coq library if your machine has multiple versions of `coqtop`. Since PG is not smart enough to detect the place where the corresponding version of the library for each `coqtop` is installed (default lib dir: `/usr/local/lib/coq`), we advise that `coq-prog-name` is not a symbolic link to `coqtop`. For example, if you are using Homebrew, we recommend you write
+
+    ```
+    (setq coq-prog-name "/usr/local/Cellar/coq/8.8.0/bin/coqtop")
+    ```
+instead of `/usr/local/bin/coqtop`, which is a symbolic link to the above,
+in order to avoid troubles in advance.
+
 
 ## Usage
 
 - While proving a theorem by using Proof General, you can invoke Traf by clicking the "prooftree icon", or equivalently, type `C-c C-d` (`proof-tree-external-display-toggle`).
-- You can perform anything while proving with PG; `C-c RET (proof-goto-point)`, `C-c C-u (proof-undo-last-successful-command)`, etc. The proof tree shown in the Traf window changes synchronously.
+- You can perform anything while proving with PG; e.g., `C-c RET (proof-goto-point)`, `C-c C-u (proof-undo-last-successful-command)`, etc. The proof tree shown in the Traf window changes synchronously.
 - Once a proof of a theorem (`Theorem`, `Lemma`, `Example`, whatever) is finished, i.e., the vernacular command `Qed` is given to Coq, the connection between PG and Traf is closed (but the Traf window remains on the screen and you can manipulate it).
-When you start proving next Theorem, you are required to invoke Traf again (by entering `C-c C-d`).
+When you start proving another theorem, you are required to invoke Traf again (by entering `C-c C-d`).
