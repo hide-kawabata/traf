@@ -19,7 +19,7 @@ Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Y
 Following programs are required to build and run Traf.
 Older versions of them might requrie some modification on the library and/or Traf's source.
 
-- Coq 8.4, 8.6, 8.7, 8.8
+- Coq 8.4, 8.6 (8.7 or later is not fully supported yet)
 - Proof General 4.4.1pre
 - GTK+ 2.0
 - Lablgtk 2.18.5 (Note: on Mac, you might need to recompile the library; see below.)
@@ -107,7 +107,7 @@ Put following lines in `.emacs` (the 2nd line only is related to Traf):
     ```
     (setq coq-prog-name "/usr/local/Cellar/coq/8.8.0/bin/coqtop")
     ```
-instead of `/usr/local/bin/coqtop`, which is a symbolic link to the above,
+    instead of `/usr/local/bin/coqtop`, which is a symbolic link to the above,
 in order to avoid troubles in advance.
 
 
