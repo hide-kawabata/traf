@@ -38,9 +38,9 @@ On Mac (macOS), the function `Gdk.GC.get_values` of Lablgtk 2.18.5 or
 It seems that `ml_gdk_gc_get_values()` in `ml_gdk.c` of Lablgtk 2.18.5 returns an unacceptable (maybe uninitialized) set of values which causes exceptions.
 Although I have not seen any trouble of this kind
 on ubuntu machines,
-Traf version 0.1.0 on Mac did not work without applying some modification to `ml_gdk.c` of Lablgtk2.
+Traf version 0.1.0 on Mac did not work without applying some modification to `ml_gdk.c` of Lablgtk2 (see `misc/lablgtk2.patch` in detail).
 
-Traf version 0.1.1 has been built such that functions `Gdk.GC.get_values` and `GDraw.drawable.set_line_attributes` of Lablgtk2 are not used so that 
+Traf version 0.1.1 has been built such that functions `Gdk.GC.get_values` and `GDraw.drawable#set_line_attributes` of Lablgtk2 are not used so that 
 no modification to Lablgtk2 is required.
 
 
