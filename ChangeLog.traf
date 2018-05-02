@@ -1,0 +1,9 @@
+2018-05-02  Hideyuki Kawabata
+
+	* modify proof_window.ml to avoid calling GDraw.drawable.set_line_attributes
+	* modify better_drawable to avoid calling Gdk.GC.get_values
+	* modify such that a cloned node keeps its branch_state
+
+2018-04-25  Hideyuki Kawabata
+
+	* release version 0.1.0

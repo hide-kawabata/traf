@@ -1,12 +1,14 @@
 (*
  * Copyright (C) 2018 Hideyuki Kawabata
  *
+ * A patchfile for obtaining traf-0.1.1 from prooftree-0.13.
+ *
  * This file is part of "traf".
  *)
-
-diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
+Only in prooftree-0.13: ChangeLog
+diff -c prooftree-0.13/Makefile.in traf-0.1.1/Makefile.in
 *** prooftree-0.13/Makefile.in	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/Makefile.in	2018-04-24 16:55:34.000000000 +0900
+--- traf-0.1.1/Makefile.in	2018-04-24 16:55:34.000000000 +0900
 ***************
 *** 42,48 ****
   
@@ -140,9 +142,9 @@ diff -c prooftree-0.13/Makefile.in traf-0.1/Makefile.in
   	man2html $< | \
   		tail -n +3 |\
   		sed -e 's|<A HREF=".*Return to Main Contents</A>||' \
-diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
+diff -c prooftree-0.13/about_window.ml traf-0.1.1/about_window.ml
 *** prooftree-0.13/about_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/about_window.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/about_window.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 50,55 ****
 --- 50,60 ----
@@ -182,9 +184,9 @@ diff -c prooftree-0.13/about_window.ml traf-0.1/about_window.ml
   	  (* ~website_label:string -> *)
   	  (* ~parent:#window_skel -> *)
   	  (* ~destroy_with_parent:bool -> *)
-diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
+diff -c prooftree-0.13/configuration.ml traf-0.1.1/configuration.ml
 *** prooftree-0.13/configuration.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/configuration.ml	2018-04-24 18:53:41.000000000 +0900
+--- traf-0.1.1/configuration.ml	2018-04-24 18:53:41.000000000 +0900
 ***************
 *** 42,48 ****
   let config_file_location = 
@@ -645,9 +647,9 @@ diff -c prooftree-0.13/configuration.ml traf-0.1/configuration.ml
        proof_tree_sep_adjustment; subtree_sep_adjustment; 
        command_length_adjustment; level_dist_adjustment; layer_sep_adjustment;
        drag_accel_adjustment; default_size_width_adjustment; 
-diff -c prooftree-0.13/configure traf-0.1/configure
+diff -c prooftree-0.13/configure traf-0.1.1/configure
 *** prooftree-0.13/configure	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/configure	2018-04-24 10:54:55.000000000 +0900
+--- traf-0.1.1/configure	2018-04-24 10:54:55.000000000 +0900
 ***************
 *** 119,144 ****
   
@@ -711,10 +713,10 @@ diff -c prooftree-0.13/configure traf-0.1/configure
       echo library LablGtk not found. Please install package liblablgtk2-ocaml-dev.
       exit 1
   fi
-Only in traf-0.1: conv_latex.ml
-diff -c prooftree-0.13/coq.ml traf-0.1/coq.ml
+Only in traf-0.1.1: conv_latex.ml
+diff -c prooftree-0.13/coq.ml traf-0.1.1/coq.ml
 *** prooftree-0.13/coq.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/coq.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/coq.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 106,111 ****
 --- 106,112 ----
@@ -752,9 +754,9 @@ diff -c prooftree-0.13/coq.ml traf-0.1/coq.ml
       | _ -> assert false
   
 !   end
-diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
+diff -c prooftree-0.13/draw_tree.ml traf-0.1.1/draw_tree.ml
 *** prooftree-0.13/draw_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/draw_tree.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/draw_tree.ml	2018-05-02 10:34:13.000000000 +0900
 ***************
 *** 551,556 ****
 --- 551,564 ----
@@ -1511,9 +1513,30 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1/draw_tree.ml
     initializer
       self#set_displayed_command;
       self#set_node_size;
-diff -c prooftree-0.13/emacs_commands.ml traf-0.1/emacs_commands.ml
+***************
+*** 1694,1704 ****
+--- 1877,1894 ----
+    then cloned_selected := Some clone;
+    set_children clone cloned_children;
+    (match node#branch_state with
++ (*
+      | Cheated
+      | Proven -> clone#set_branch_state node#branch_state
+      | Unproven
+      | CurrentNode
+      | Current -> ()
++  *)
++     | Cheated
++     | Proven
++     | Unproven
++     | CurrentNode
++     | Current -> clone#set_branch_state node#branch_state
+    );
+    clone
+  
+diff -c prooftree-0.13/emacs_commands.ml traf-0.1.1/emacs_commands.ml
 *** prooftree-0.13/emacs_commands.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/emacs_commands.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/emacs_commands.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 53,61 ****
   
@@ -1556,9 +1579,77 @@ diff -c prooftree-0.13/emacs_commands.ml traf-0.1/emacs_commands.ml
 ! let emacs_send_proof_script_in_current_goals script =
 !   emacs_long_callback "insert-proof-script-in-current-goals" script
 !     
-diff -c prooftree-0.13/help_window.ml traf-0.1/help_window.ml
+diff -c prooftree-0.13/gtk_ext.ml traf-0.1.1/gtk_ext.ml
+*** prooftree-0.13/gtk_ext.ml	2017-01-03 19:35:43.000000000 +0900
+--- traf-0.1.1/gtk_ext.ml	2018-05-02 10:34:13.000000000 +0900
+***************
+*** 31,37 ****
+  *)
+  class better_drawable ?colormap w pc = 
+  object
+!   inherit GDraw.drawable ?colormap w
+  
+    (** Link a writable Pango context for easy access. *)
+    val pango_context = (pc : GPango.context_rw)
+--- 31,37 ----
+  *)
+  class better_drawable ?colormap w pc = 
+  object
+!   inherit GDraw.drawable ?colormap w as super
+  
+    (** Link a writable Pango context for easy access. *)
+    val pango_context = (pc : GPango.context_rw)
+***************
+*** 39,53 ****
+    (** Return a writable Pango context. *)
+    method pango_context = pango_context    
+  
+    (** Return the current foreground color of the graphics context of
+        this drawable. 
+    *)
+!   method get_foreground = (Gdk.GC.get_values gc).Gdk.GC.foreground
+  
+    (** Return the current background color of the graphics context of
+        this drawable. 
+    *)
+!   method get_background = (Gdk.GC.get_values gc).Gdk.GC.background
+  end
+  
+  
+--- 39,68 ----
+    (** Return a writable Pango context. *)
+    method pango_context = pango_context    
+  
++   val mutable fg_color = GDraw.color (`NAME "black");
++   val mutable bg_color = GDraw.color (`NAME "white");
++ 
+    (** Return the current foreground color of the graphics context of
+        this drawable. 
+    *)
+!   (* method get_foreground = (Gdk.GC.get_values gc).Gdk.GC.foreground *)
+!   method get_foreground = fg_color;
+  
+    (** Return the current background color of the graphics context of
+        this drawable. 
+    *)
+!   (* method get_background = (Gdk.GC.get_values gc).Gdk.GC.background *)
+!   method get_background = bg_color;
+! 
+!   (* override GDraw.drawable#set_foreground *)
+!   method set_foreground c =
+!     super#set_foreground c;
+!     fg_color <- GDraw.color c
+! 
+!   (* override GDraw.drawable#set_background *)
+!   method set_background c =
+!     super#set_background c;
+!     bg_color <- GDraw.color c
+  end
+  
+  
+diff -c prooftree-0.13/help_window.ml traf-0.1.1/help_window.ml
 *** prooftree-0.13/help_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/help_window.ml	2018-04-24 16:45:21.000000000 +0900
+--- traf-0.1.1/help_window.ml	2018-04-24 16:45:21.000000000 +0900
 ***************
 *** 61,67 ****
 --- 61,70 ----
@@ -1669,9 +1760,9 @@ diff -c prooftree-0.13/help_window.ml traf-0.1/help_window.ml
      (Italic, "Configuration");
      (Default, " item displays the configuration dialog. Changes in this dialog \
   immediately take effect. In this dialog, the ");
-diff -c prooftree-0.13/input.ml traf-0.1/input.ml
+diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
 *** prooftree-0.13/input.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/input.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/input.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 420,434 ****
     (* Printf.fprintf (debugc()) "GS cont %d - %d enter\n%!" i len; *)
@@ -1882,9 +1973,9 @@ diff -c prooftree-0.13/input.ml traf-0.1/input.ml
     Scanf.sscanf first_line "second line %3d\n"
       (fun second_line_len ->
         (* Printf.fprintf (debugc()) "second line cont %d\n%!" second_line_len; *)
-diff -c prooftree-0.13/main.ml traf-0.1/main.ml
+diff -c prooftree-0.13/main.ml traf-0.1.1/main.ml
 *** prooftree-0.13/main.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/main.ml	2018-04-24 17:35:32.000000000 +0900
+--- traf-0.1.1/main.ml	2018-04-24 17:35:32.000000000 +0900
 ***************
 *** 97,110 ****
   *)
@@ -1933,9 +2024,9 @@ diff -c prooftree-0.13/main.ml traf-0.1/main.ml
   	"Entering LablGTK main loop ...\n\n%!")
       Version.version;
     if !start_config_dialog then
-diff -c prooftree-0.13/proof_tree.ml traf-0.1/proof_tree.ml
+diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
 *** prooftree-0.13/proof_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/proof_tree.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/proof_tree.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 301,306 ****
 --- 301,375 ----
@@ -2372,9 +2463,9 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1/proof_tree.ml
       end;
       pt.sequent_area_needs_refresh <- false;
       pt.need_redraw <- false
-diff -c prooftree-0.13/proof_tree.mli traf-0.1/proof_tree.mli
+diff -c prooftree-0.13/proof_tree.mli traf-0.1.1/proof_tree.mli
 *** prooftree-0.13/proof_tree.mli	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/proof_tree.mli	2018-04-23 16:25:08.000000000 +0900
+--- traf-0.1.1/proof_tree.mli	2018-04-23 16:25:08.000000000 +0900
 ***************
 *** 71,77 ****
   val process_current_goals :
@@ -2410,9 +2501,9 @@ diff -c prooftree-0.13/proof_tree.mli traf-0.1/proof_tree.mli
   
   
   (** Switch to a different open goal.
-diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
+diff -c prooftree-0.13/proof_window.ml traf-0.1.1/proof_window.ml
 *** prooftree-0.13/proof_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/proof_window.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/proof_window.ml	2018-05-02 10:34:13.000000000 +0900
 ***************
 *** 101,106 ****
 --- 101,109 ----
@@ -2517,6 +2608,23 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
     (***************************************************************************
      *
 ***************
+*** 304,311 ****
+--- 337,350 ----
+    (** Reflect changes in the current configuration. *)
+    method configuration_updated =
+      sequent_window#misc#modify_font !sequent_font_desc;
++ (*
+      drawable#set_line_attributes 
+        ~width:(!current_config.turnstile_line_width) ();
++  *)
++     Gdk.GC.set_line_attributes (drawable#gc)
++       ~width:(!current_config.turnstile_line_width)
++       ~style:`SOLID ~cap:`ROUND ~join:`ROUND;
++ 
+      layer_stack#configuration_updated;
+      self#expand_drawing_area;
+      ignore(self#position_tree);
+***************
 *** 471,478 ****
   	  && (List.mem `CONTROL (GdkEvent.Key.state ev))
   	  -> 
@@ -2526,7 +2634,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
         | ks when ks = GdkKeysyms._Left -> 
   	scroll_adjustment drawing_h_adjustment (-1); true
         | ks when ks = GdkKeysyms._Right -> 
---- 504,510 ----
+--- 510,516 ----
   	  && (List.mem `CONTROL (GdkEvent.Key.state ev))
   	  -> 
   	exit 0
@@ -2545,7 +2653,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
         (* 
          * | ks when (ks = GdkKeysyms._C or ks = GdkKeysyms._c)  -> 
          * 	show_config_window (); true
---- 514,541 ----
+--- 520,547 ----
         | ks when ks = GdkKeysyms._Down -> 
   	scroll_adjustment drawing_v_adjustment 1; true
   
@@ -2588,7 +2696,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
   	      (* make now the _h_adjustment, first try if one of the 
                  * hint nodes can be made visible as well
   	       *)
---- 703,747 ----
+--- 709,753 ----
   	      success := false;
   	      (* Printf.fprintf (debugc()) "clever forced error %!" *)
   	    end else begin
@@ -2636,7 +2744,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
   	       *)
 ***************
 *** 748,753 ****
---- 832,840 ----
+--- 838,846 ----
        * 	~width:(max current_width new_width)
        * 	~height:(max current_height new_height) ();
        *)
@@ -2655,7 +2763,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
   
     (** Schedule an expose event for the drawing area, thereby causing
         it to get redrawn.
---- 862,868 ----
+--- 868,874 ----
       self#try_adjustment;
       self#erase;
       (* Printf.fprintf (debugc()) "REDRAW\n%!"; *)
@@ -2672,7 +2780,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
   
     (** Make the current node visible in a user friendly way. *)
     method show_current_node () =
---- 890,897 ----
+--- 896,903 ----
     *)
     method reposition_current_node () =
       position_to_current_node <- true;
@@ -2690,7 +2798,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
   	| None -> outside_click_fun ()
   	| Some node -> node_click_fun node
   
---- 1112,1118 ----
+--- 1118,1124 ----
       'a . int -> int -> (#proof_tree_element -> 'a) -> (unit -> 'a) -> 'a =
       fun x y node_click_fun outside_click_fun ->
         match layer_stack#find_node_for_point_in_layer_stack 
@@ -2700,7 +2808,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
   
 ***************
 *** 1045,1055 ****
---- 1133,1145 ----
+--- 1139,1151 ----
       self#remember_for_dragging;
       if (not double) && (not shifted)
       then self#save_selected_node_state;
@@ -2716,7 +2824,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
   	(fun () -> self#set_selected_node None)
 ***************
 *** 1112,1117 ****
---- 1202,1208 ----
+--- 1208,1214 ----
         when dragging started.
     *)
     method pointer_motion (_ev : GdkEvent.Motion.t) =
@@ -2726,7 +2834,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
         last_button_press_h_adjustment_value +.
 ***************
 *** 1123,1128 ****
---- 1214,1220 ----
+--- 1220,1226 ----
       	!current_config.button_1_drag_acceleration *. 
   	(float_of_int (y - last_button_press_top_y))
       in
@@ -2736,7 +2844,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
        * Printf.fprintf (debugc()) 
 ***************
 *** 1130,1141 ****
---- 1222,1235 ----
+--- 1228,1241 ----
        *)
       if not restored_selected_node 
       then self#single_restore_selected_node;
@@ -2752,6 +2860,34 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
        * last_button_1_x <- x;
        * last_button_1_y <- y;
 ***************
+*** 1222,1240 ****
+--- 1322,1346 ----
+  		  | _ -> None
+  	in
+  	context_menu_undo_state <- undo_state;
++ (*
+  	(List.nth context_menu#children 0)#misc#set_sensitive
+  	  (undo_state <> None);
+  	(List.nth context_menu#children 1)#misc#set_sensitive
+  	  (node#node_kind = Proof_command);
+  	(List.nth context_menu#children 2)#misc#set_sensitive
+  	  (node#node_kind = Proof_command);
++  *)
+  	context_menu#popup ~button ~time;
++         ()
+        )
+        (fun () ->
+  	List.iter
+  	  (fun n ->
+  	    (List.nth context_menu#children n)#misc#set_sensitive false)
++ (*
+  	  [0; 1; 2];
++  *)
++           [];
+  	context_menu#popup ~button ~time
+        )
+  
+***************
 *** 1269,1275 ****
   	  end 
   	  else false
@@ -2760,7 +2896,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
   	  then begin
   	    let contents = GMisc.label ~text:node#displayed_text () in
   	    GtkBase.Tooltip.set_custom tooltip contents#as_widget;
---- 1363,1369 ----
+--- 1375,1381 ----
   	  end 
   	  else false
   	| Proof_command ->
@@ -2778,7 +2914,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
     in
     let drawing_h_adjustment = drawing_scrolling#hadjustment in
     let drawing_v_adjustment = drawing_scrolling#vadjustment in
---- 1441,1448 ----
+--- 1453,1460 ----
       ~packing:(top_v_box#pack ~expand:true) ()
     in
     let drawing_scrolling = GBin.scrolled_window (* ~border_width:1 *)
@@ -2796,7 +2932,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
     in
     let labeled_sequent_frame = GBin.frame ~label:"no sequent" ~shadow_type:`NONE
       ~packing:outer_sequent_frame#add ()
---- 1455,1461 ----
+--- 1467,1473 ----
         drawing_area#misc#create_pango_context
     in
     let outer_sequent_frame = GBin.frame ~shadow_type:`IN 
@@ -2806,7 +2942,7 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
       ~packing:outer_sequent_frame#add ()
 ***************
 *** 1399,1404 ****
---- 1493,1506 ----
+--- 1505,1518 ----
         ~packing:(button_h_box#pack ~expand:true ~fill:true) ()
     in
     message_label#set_use_markup true;
@@ -2822,7 +2958,11 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
       GButton.button ~label:"Menu" ~packing:(button_h_box#pack) ()
     in
 ***************
-*** 1418,1425 ****
+*** 1414,1448 ****
+        message_label context_menu name
+    in
+    let clone_fun () =
+!     let owin = make_proof_window name geometry_string in
       proof_window#clone owin
     in
   
@@ -2831,7 +2971,34 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
        `I("Show current", proof_window#reposition_current_node);
        `I("Show selected", proof_window#show_selected_node);
        `I("Existentials", proof_window#show_existential_window);
---- 1520,1544 ----
+       `I("Configuration", show_config_window);
+       `I("Help", show_help_window);
+       `I("About", show_about_window);
+       `I("Exit", (fun _ -> exit 0));
+      ] in
+    let context_menu_entries =
+      [`I("Undo to point", proof_window#undo_to_point);
+       `I("Insert command", proof_window#insert_proof_command);
+       `I("Insert subproof", proof_window#insert_subproof);
+       `S
+      ] @ main_menu_entries
+    in
+    GToolbox.build_menu main_menu ~entries:main_menu_entries;
+    GToolbox.build_menu context_menu ~entries:context_menu_entries;
+    ignore(context_menu#connect#deactivate 
+             ~callback:(proof_window#context_menu_deactivated));
+! 
+    top_window#set_title (name ^ " proof tree");
+    drawable#set_line_attributes 
+      ~width:(!current_config.turnstile_line_width) ();
+    drawing_area#misc#set_has_tooltip true;
+    ignore(drawing_area#misc#connect#query_tooltip
+     	   ~callback:proof_window#drawable_tooltip);
+--- 1528,1593 ----
+        message_label context_menu name
+    in
+    let clone_fun () =
+!     let owin = make_proof_window (name ^ " [clone]") geometry_string in
       proof_window#clone owin
     in
   
@@ -2856,10 +3023,47 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
 ! 
        `I("Show current", proof_window#reposition_current_node);
        `I("Show selected", proof_window#show_selected_node);
++ (*
        `I("Existentials", proof_window#show_existential_window);
++  *)
+       `I("Configuration", show_config_window);
+       `I("Help", show_help_window);
+       `I("About", show_about_window);
+       `I("Exit", (fun _ -> exit 0));
+      ] in
+    let context_menu_entries =
++ (*
+      [`I("Undo to point", proof_window#undo_to_point);
+       `I("Insert command", proof_window#insert_proof_command);
+       `I("Insert subproof", proof_window#insert_subproof);
+       `S
+      ] @ main_menu_entries
++  *)
++     main_menu_entries
+    in
+    GToolbox.build_menu main_menu ~entries:main_menu_entries;
+    GToolbox.build_menu context_menu ~entries:context_menu_entries;
++ (*
+    ignore(context_menu#connect#deactivate 
+             ~callback:(proof_window#context_menu_deactivated));
+!  *)
+    top_window#set_title (name ^ " proof tree");
++ 
++ (*
+    drawable#set_line_attributes 
+      ~width:(!current_config.turnstile_line_width) ();
++  *)
++ 
++   Gdk.GC.set_line_attributes (drawable#gc)
++     ~width:(!current_config.turnstile_line_width)
++     ~style:`SOLID ~cap:`ROUND ~join:`ROUND;
++ 
+    drawing_area#misc#set_has_tooltip true;
+    ignore(drawing_area#misc#connect#query_tooltip
+     	   ~callback:proof_window#drawable_tooltip);
 ***************
 *** 1497,1502 ****
---- 1616,1631 ----
+--- 1642,1657 ----
   	     main_menu#popup ~button:0 
   	       ~time:(GtkMain.Main.get_current_event_time ())));
   
@@ -2876,12 +3080,14 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1/proof_window.ml
     top_window#show ();
     if geometry_string <> "" then
       ignore(top_window#parse_geometry geometry_string);
-Common subdirectories: prooftree-0.13/test and traf-0.1/test
-Only in traf-0.1: traf.1
-Only in traf-0.1: traf_aux.ml
-diff -c prooftree-0.13/tree_layers.ml traf-0.1/tree_layers.ml
+Only in prooftree-0.13: prooftree.1
+Only in prooftree-0.13: prooftree.man.html
+Common subdirectories: prooftree-0.13/test and traf-0.1.1/test
+Only in traf-0.1.1: traf.1
+Only in traf-0.1.1: traf_aux.ml
+diff -c prooftree-0.13/tree_layers.ml traf-0.1.1/tree_layers.ml
 *** prooftree-0.13/tree_layers.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/tree_layers.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/tree_layers.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 166,176 ****
     (** Draw the content of this layer relative to the specified left
@@ -2965,9 +3171,9 @@ diff -c prooftree-0.13/tree_layers.ml traf-0.1/tree_layers.ml
   	then l#find_node_for_point_in_layer left top bx by
   	else 
   	  let top = top + !current_config.layer_sep + l#height in
-diff -c prooftree-0.13/util.ml traf-0.1/util.ml
+diff -c prooftree-0.13/util.ml traf-0.1.1/util.ml
 *** prooftree-0.13/util.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/util.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/util.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 285,290 ****
 --- 285,298 ----
@@ -3000,11 +3206,11 @@ diff -c prooftree-0.13/util.ml traf-0.1/util.ml
 !       let c = open_out (homedir () ^ "/.traf-debug") in
         copt := Some c;
         c
-diff -c prooftree-0.13/version.txt traf-0.1/version.txt
+diff -c prooftree-0.13/version.txt traf-0.1.1/version.txt
 *** prooftree-0.13/version.txt	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1/version.txt	2018-04-24 17:34:33.000000000 +0900
+--- traf-0.1.1/version.txt	2018-05-02 10:35:24.000000000 +0900
 ***************
 *** 1 ****
 ! 0.13
 --- 1 ----
-! 0.1
+! 0.1.1

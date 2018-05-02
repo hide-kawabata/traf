@@ -19,10 +19,10 @@ Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Y
 Following programs are required to build and run Traf.
 Older versions of them might requrie some modification on the library and/or Traf's source.
 
-- Coq 8.4, 8.6 (8.7 or later is not fully supported yet)
+- Coq 8.4, 8.6 (8.7 or later are not fully supported yet)
 - Proof General 4.4.1pre
 - GTK+ 2.0
-- Lablgtk 2.18.5 (Note: on Mac, you might need to recompile the library; see below.)
+- Lablgtk 2.18.5 (now you can use the one installed by just typing `opam install lablgtk`)
 - OCaml 4.05.0
 
 Checked environments: 
@@ -30,19 +30,18 @@ Checked environments:
 - macOS Sierra 10.12.6
 - ubuntu 16.04 LTS
 
-### Note for Mac (?)
+### FYI: Note for Mac users
 
-Lablgtk2 2.18.5 seems to require fixes.
-It seems that `ml_gdk_gc_get_values()` in `ml_gdk.c` sometimes return an unacceptable (maybe uninitialized) set of values which causes exceptions.
-Although this phenomenon has not happened on my ubuntu machine,
-My Mac always suffered from it.
+On Mac (macOS), the function `Gdk.GC.get_values` of Lablgtk 2.18.5 or
+`gdk_gc_get_values()` of GTK+ 2.24.32
+ does not seem to work correctly.
+It seems that `ml_gdk_gc_get_values()` in `ml_gdk.c` of Lablgtk 2.18.5 returns an unacceptable (maybe uninitialized) set of values which causes exceptions.
+Although I have not seen any trouble of this kind
+on ubuntu machines,
+Traf version 0.1.0 on Mac did not work without applying some modification to `ml_gdk.c` of Lablgtk2.
 
-
-A quick workaround is to rewrite `src/ml_gdk.c` of lablgtk2 by applying the supplemental patch in `misc`, and recompile the library.
-
-    $ cd /shomewhere/lablgtk-2.18.5/src
-    $ patch -p1 < traf_top_dir/misc/lablgtk2.patch
-
+Traf version 0.1.1 has been built such that functions `Gdk.GC.get_values` and `GDraw.drawable.set_line_attributes` of Lablgtk2 are not used so that 
+no modification to Lablgtk2 is required.
 
 
 
@@ -105,7 +104,7 @@ Put following lines in `.emacs` (the 2nd line only is related to Traf):
 - Note that you can not share coq library if your machine has multiple versions of `coqtop`. Since PG is not smart enough to detect the place where the corresponding version of the library for each `coqtop` is installed (default lib dir: `/usr/local/lib/coq`), we advise that `coq-prog-name` is not a symbolic link to `coqtop`. For example, if you are using Homebrew, we recommend you write
 
     ```
-    (setq coq-prog-name "/usr/local/Cellar/coq/8.8.0/bin/coqtop")
+    (setq coq-prog-name "/usr/local/Cellar/coq/8.6.1_1/bin/coqtop")
     ```
     instead of `/usr/local/bin/coqtop`, which is a symbolic link to the above,
 in order to avoid troubles in advance.
