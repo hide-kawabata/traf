@@ -32,12 +32,10 @@ Checked environments:
 
 #### Note: for users of Coq 8.7 or later
 Proof General requires slight modifications.
-Please rebuild PG after applying two patch files in the dir `misc` to 
-update `coq/coq.el` and `generic/proof-tree.el` of PG.
+Please apply the patch file in `misc` and rebuild PG.
 
     $ cd pg_top_dir
-    $ patch -p0 < traf_top_dir/misc/pg-coq.patch
-    $ patch -p0 < traf_top_dir/misc/pg-proof-tree.patch
+    $ patch -p0 < traf_top_dir/misc/pg.patch
     $ make
 
 Note that Traf still can not communicate with Coq 8.8 correctly
