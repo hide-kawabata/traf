@@ -19,7 +19,7 @@ Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Y
 Following programs are required to build and run Traf.
 Older versions of them might requrie some modification on the library and/or Traf's source.
 
-- Coq 8.4, 8.6 (8.7 or later are not fully supported yet)
+- Coq 8.4, 8.6, 8.7 (8.8 or later are not fully supported yet)
 - Proof General 4.4.1pre
 - GTK+ 2.0
 - Lablgtk 2.18.5 (now you can use the one installed by just typing `opam install lablgtk`)
@@ -30,7 +30,22 @@ Checked environments:
 - macOS Sierra 10.12.6
 - ubuntu 16.04 LTS
 
-### FYI: Note for Mac users
+#### Note: for users of Coq 8.7 or later
+Proof General requires slight modifications.
+Please rebuild PG after applying two patch files in the dir `misc` to 
+update `coq/coq.el` and `generic/proof-tree.el` of PG.
+
+    $ cd pg_top_dir
+    $ patch -p0 < traf_top_dir/misc/pg-coq.patch
+    $ patch -p0 < traf_top_dir/misc/pg-proof-tree.patch
+    $ make
+
+Note that Traf still can not communicate with Coq 8.8 correctly
+ through rebuilt PG;
+e.g., theorem `verification_correct` in Software Foundations `https://softwarefoundations.cis.upenn.edu` can not be treated.
+
+
+#### FYI: Note for Mac users
 
 On Mac (macOS), the function `Gdk.GC.get_values` of Lablgtk 2.18.5 or
 `gdk_gc_get_values()` of GTK+ 2.24.32
@@ -41,7 +56,7 @@ on ubuntu machines,
 Traf version 0.1.0 on Mac did not work without applying some modification to `ml_gdk.c` of Lablgtk2 (see `misc/lablgtk2.patch` in detail).
 
 Traf version 0.1.1 has been built such that functions `Gdk.GC.get_values` and `GDraw.drawable#set_line_attributes` of Lablgtk2 are not used so that 
-no modification to Lablgtk2 is required.
+no modification to Lablgtk2 or GTK+ is required.
 
 
 

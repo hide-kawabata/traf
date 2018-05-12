@@ -1,0 +1,62 @@
+(*
+ * Copyright (C) 2018 Hideyuki Kawabata
+ *
+ * A patchfile for obtaining traf-0.1.1 from prooftree-0.13.
+ *
+ * This file is part of "traf".
+ *)
+*** generic-orig/proof-tree.el	2018-05-12 15:05:38.000000000 +0900
+--- generic/proof-tree.el	2018-05-12 15:05:21.000000000 +0900
+***************
+*** 866,872 ****
+  	    (when var-goal-assoc
+  	      (dolist (sequent-id (cdr var-goal-assoc))
+  		(let ((show-cmd
+! 		       (funcall proof-tree-show-sequent-command sequent-id)))
+  		  (if show-cmd
+  		      (setq proof-action-list
+  			    (cons (proof-shell-action-list-item
+--- 866,872 ----
+  	    (when var-goal-assoc
+  	      (dolist (sequent-id (cdr var-goal-assoc))
+  		(let ((show-cmd
+! 		       (funcall proof-tree-show-sequent-command sequent-id "")))
+  		  (if show-cmd
+  		      (setq proof-action-list
+  			    (cons (proof-shell-action-list-item
+***************
+*** 925,931 ****
+  	(goto-char start)
+  	(while (proof-re-search-forward proof-tree-additional-subgoal-ID-regexp
+  					end t)
+! 	  (let ((other-id (match-string-no-properties 1)))
+  	    (setq additional-goal-ids (cons other-id additional-goal-ids))))
+  	(setq additional-goal-ids (nreverse additional-goal-ids))
+  	(list sequent-id sequent-text additional-goal-ids))
+--- 925,931 ----
+  	(goto-char start)
+  	(while (proof-re-search-forward proof-tree-additional-subgoal-ID-regexp
+  					end t)
+! 	  (let ((other-id (match-string-no-properties 2)))
+  	    (setq additional-goal-ids (cons other-id additional-goal-ids))))
+  	(setq additional-goal-ids (nreverse additional-goal-ids))
+  	(list sequent-id sequent-text additional-goal-ids))
+***************
+*** 1128,1135 ****
+  	       (proof-name (cadr proof-info)))
+  	  (goto-char start)
+  	  (if (proof-re-search-forward proof-tree-update-goal-regexp end t)
+! 	      (let ((sequent-id (match-string-no-properties 1))
+! 		    (sequent-text (match-string-no-properties 2)))
+  		(proof-tree-send-update-sequent
+  		 proof-state proof-name sequent-id sequent-text)
+  		;; put current sequent into hash (if it is not there yet)
+--- 1128,1135 ----
+  	       (proof-name (cadr proof-info)))
+  	  (goto-char start)
+  	  (if (proof-re-search-forward proof-tree-update-goal-regexp end t)
+! 	      (let ((sequent-id (match-string-no-properties 2))
+! 		    (sequent-text (match-string-no-properties 3)))
+  		(proof-tree-send-update-sequent
+  		 proof-state proof-name sequent-id sequent-text)
+  		;; put current sequent into hash (if it is not there yet)

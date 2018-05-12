@@ -1,0 +1,94 @@
+(*
+ * Copyright (C) 2018 Hideyuki Kawabata
+ *
+ * A patchfile for obtaining traf-0.1.1 from prooftree-0.13.
+ *
+ * This file is part of "traf".
+ *)
+*** coq-orig/coq.el	2018-05-12 15:05:57.000000000 +0900
+--- coq/coq.el	2018-05-12 15:05:44.000000000 +0900
+***************
+*** 220,233 ****
+    :group 'coq-proof-tree)
+  
+  (defcustom coq-proof-tree-update-goal-regexp
+!   (concat "^goal / evar \\([0-9]+\\) is:\n"
+            "\\s-*\n\\(\\(?:.+\n\\)*\\)\\(?:\n\\|$\\)")
+    "Regexp for `proof-tree-update-goal-regexp'."
+    :type 'regexp
+    :group 'coq-proof-tree)
+  
+  (defcustom coq-proof-tree-additional-subgoal-ID-regexp
+!   "^subgoal [0-9]+ (ID \\([0-9]+\\)) is:"
+    "Regexp for `proof-tree-additional-subgoal-ID-regexp'."
+    :type 'regexp
+    :group 'coq-proof-tree)
+--- 220,234 ----
+    :group 'coq-proof-tree)
+  
+  (defcustom coq-proof-tree-update-goal-regexp
+! ;  (concat "^goal / evar \\([0-9]+\\) is:\n"
+!   (concat "^subgoal \\([0-9]+\\) (ID \\([0-9]+\\)) is:\n"
+            "\\s-*\n\\(\\(?:.+\n\\)*\\)\\(?:\n\\|$\\)")
+    "Regexp for `proof-tree-update-goal-regexp'."
+    :type 'regexp
+    :group 'coq-proof-tree)
+  
+  (defcustom coq-proof-tree-additional-subgoal-ID-regexp
+!   "^subgoal \\([0-9]+\\) (ID \\([0-9]+\\)) is:"
+    "Regexp for `proof-tree-additional-subgoal-ID-regexp'."
+    :type 'regexp
+    :group 'coq-proof-tree)
+***************
+*** 1889,1897 ****
+     coq-proof-tree-existentials-state-end-regexp
+     coq-proof-tree-instantiated-existential-regexp))
+  
+! (defun coq-show-sequent-command (sequent-id)
+    "Coq specific function for `proof-tree-show-sequent-command'."
+!   (format "Show Goal \"%s\"." sequent-id))
+  
+  (defun coq-proof-tree-get-new-subgoals ()
+    "Check for new subgoals and issue appropriate Show commands.
+--- 1890,1902 ----
+     coq-proof-tree-existentials-state-end-regexp
+     coq-proof-tree-instantiated-existential-regexp))
+  
+! (defun coq-show-sequent-command (sequent-id sequent-num)
+    "Coq specific function for `proof-tree-show-sequent-command'."
+!   ;; (message "[CSSC] sequent-id=%s sequent-num=%s" sequent-id sequent-num)
+!   (if (eq "" sequent-num)
+!       (format "Show Goal \"%s\"." sequent-id)
+!     (format "Show %s." sequent-num)))
+! 
+  
+  (defun coq-proof-tree-get-new-subgoals ()
+    "Check for new subgoals and issue appropriate Show commands.
+***************
+*** 1940,1951 ****
+          (goto-char start)
+          (while (proof-re-search-forward
+                  coq-proof-tree-additional-subgoal-ID-regexp end t)
+!           (let ((subgoal-id (match-string-no-properties 1)))
+              (unless (gethash subgoal-id proof-tree-sequent-hash)
+                ;; (message "CPTGNS new sequent %s found" subgoal-id)
+                (setq proof-action-list
+                      (cons (proof-shell-action-list-item
+!                            (coq-show-sequent-command subgoal-id)
+                             (proof-tree-make-show-goal-callback (car proof-info))
+                             '(no-goals-display
+                               no-response-display
+--- 1945,1957 ----
+          (goto-char start)
+          (while (proof-re-search-forward
+                  coq-proof-tree-additional-subgoal-ID-regexp end t)
+!           (let ((subgoal-num (match-string-no-properties 1))
+!                 (subgoal-id (match-string-no-properties 2)))
+              (unless (gethash subgoal-id proof-tree-sequent-hash)
+                ;; (message "CPTGNS new sequent %s found" subgoal-id)
+                (setq proof-action-list
+                      (cons (proof-shell-action-list-item
+!                            (coq-show-sequent-command subgoal-id subgoal-num)
+                             (proof-tree-make-show-goal-callback (car proof-info))
+                             '(no-goals-display
+                               no-response-display
