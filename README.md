@@ -19,10 +19,10 @@ Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Y
 Following programs are required to build and run Traf.
 Older versions of them might requrie some modification on the library and/or Traf's source.
 
-- Coq 8.4, 8.6, 8.7 (8.8 or later are not fully supported yet)
-- Proof General 4.4.1pre
+- Coq 8.4, 8.6, 8.7, 8.8
+- Proof General 4.4.1pre (use of Coq 8.7 or 8.8 requires rebuild of PG; see below)
 - GTK+ 2.0
-- Lablgtk 2.18.5 (now you can use the one installed by just typing `opam install lablgtk`)
+- Lablgtk 2.18.5
 - OCaml 4.05.0
 
 Checked environments: 
@@ -30,41 +30,30 @@ Checked environments:
 - macOS Sierra 10.12.6
 - ubuntu 16.04 LTS
 
-#### Note: for users of Coq 8.7 or later
-Proof General requires slight modifications.
+#### Note: for users of Coq 8.7 and 8.8
+Proof General requires slight modification.
 Please apply the patch file in `misc` and rebuild PG.
 
     $ cd pg_top_dir
     $ patch -p0 < traf_top_dir/misc/pg.patch
     $ make
 
-Note that Traf still can not communicate with Coq 8.8 correctly
- through rebuilt PG;
-e.g., theorem `verification_correct` in Software Foundations `https://softwarefoundations.cis.upenn.edu` can not be treated.
-
-
-#### FYI: Note for Mac users
-
-On Mac (macOS), the function `Gdk.GC.get_values` of Lablgtk 2.18.5 or
-`gdk_gc_get_values()` of GTK+ 2.24.32
- does not seem to work correctly.
-It seems that `ml_gdk_gc_get_values()` in `ml_gdk.c` of Lablgtk 2.18.5 returns an unacceptable (maybe uninitialized) set of values which causes exceptions.
-Although I have not seen any trouble of this kind
-on ubuntu machines,
-Traf version 0.1.0 on Mac did not work without applying some modification to `ml_gdk.c` of Lablgtk2 (see `misc/lablgtk2.patch` in detail).
-
-Traf version 0.1.1 has been built such that functions `Gdk.GC.get_values` and `GDraw.drawable#set_line_attributes` of Lablgtk2 are not used so that 
-no modification to Lablgtk2 or GTK+ is required.
 
 
 
-## How to build
 
-By running `misc/quich_build.sh` at the top directory, 
-you can obtain the executable `traf` in newly created directory `build`.
-You can copy `traf` anywhere to use it. 
+## Building Traf
 
-What is done in the process is to follow the instructions shown below:
+Run `misc/quick_build.sh` at the Traf's top directory,
+and you will get the executable `traf` in newly created directory `build`.
+You can copy `traf` anywhere you want.
+
+    $ cd traf_top_dir
+    $ sh misc/quick_build.sh
+
+
+
+#### FYI: What is done by `misc/quick_build.sh`:
 
 1. Obtain `prooftree-0.13.tar.gz` and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in the directory `misc`.
 
