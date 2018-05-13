@@ -1762,7 +1762,7 @@ diff -c prooftree-0.13/help_window.ml traf-0.1.1/help_window.ml
   immediately take effect. In this dialog, the ");
 diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
 *** prooftree-0.13/input.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/input.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-0.1.1/input.ml	2018-05-13 20:28:44.000000000 +0900
 ***************
 *** 420,434 ****
     (* Printf.fprintf (debugc()) "GS cont %d - %d enter\n%!" i len; *)
@@ -1812,10 +1812,13 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
     current_parser := !message_start_parser
   
       
---- 555,570 ----
+--- 555,573 ----
     in
     let proof_name = chop_final_newlines proof_name in
     let proof_command = chop_final_newlines proof_command in
+!   if Traf_aux.ignored_commands proof_command
+!   then ()
+!   else
 !   (* let current_sequent_text = chop_final_newlines current_sequent_text in *)
     let additional_ids_string = chop_final_newlines additional_ids_string in
     let additional_ids = string_split ' ' additional_ids_string in
@@ -1839,7 +1842,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
   
   
   
---- 604,614 ----
+--- 607,617 ----
   			  (fun existentials_string ->
   			    parse_current_goals_finish state current_sequent_id
   			      cheated_string layer_string
@@ -1861,7 +1864,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
     current_parser := !message_start_parser
   
   
---- 633,641 ----
+--- 636,644 ----
   *)
   let parse_update_sequent_finish state sequent_id proof_name sequent_text =
     let proof_name = chop_final_newlines proof_name in
@@ -1880,7 +1883,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
   
   
   
---- 655,661 ----
+--- 658,664 ----
   	  get_string sequent_text_bytes
   	    (fun sequent_text ->
   	      parse_update_sequent_finish state sequent_id 
@@ -1897,7 +1900,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
   
   
   
---- 692,698 ----
+--- 695,701 ----
       (fun state new_current_id proof_name_bytes ->
         get_string proof_name_bytes
   	(fun proof_name ->
@@ -1915,7 +1918,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
   
   
   
---- 754,763 ----
+--- 757,766 ----
   	      get_string existential_bytes
   		(fun existentials_string ->
   		  parse_branch_finished_finish 
@@ -1935,7 +1938,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
   	  Proof_tree.process_proof_complete state proof_name;
   	  current_parser := !message_start_parser))
   
---- 779,785 ----
+--- 782,788 ----
       (fun state proof_name_bytes ->
         get_string proof_name_bytes 
   	(fun proof_name ->
@@ -1945,7 +1948,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
   
 ***************
 *** 805,810 ****
---- 813,819 ----
+--- 816,822 ----
       @param proof_name full proof name (as raw data section string)
   *)
   let parse_quit_proof_finish proof_name =
@@ -1955,7 +1958,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
     current_parser := !message_start_parser
 ***************
 *** 839,844 ****
---- 848,854 ----
+--- 851,857 ----
       @raise Sys_blocked_io if parsing gets interrupted
   *)
   let parse_command command =
@@ -1965,7 +1968,7 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
     Scanf.bscanf com_buf "%s " 
 ***************
 *** 866,871 ****
---- 876,882 ----
+--- 879,885 ----
       @raise Sys_blocked_io if parsing gets interrupted
   *)
   let read_second_line first_line =

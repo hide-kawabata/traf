@@ -159,6 +159,18 @@ let mold_subgoal s =
   text
 
 
+(** This function checks if the received info should be ignored or not
+    depending on the command string.
+ *)
+let ignored_commands cmd_str =
+  if (Str.string_match (Str.regexp ("^Show")) cmd_str 0)
+     && not (Str.string_match (Str.regexp (".*as a replacement of Proof"))
+               cmd_str 0)
+  then
+    true
+  else
+    false
+
 
 (* used in proof_window.ml and draw_tree.ml ---------------- *)
 
