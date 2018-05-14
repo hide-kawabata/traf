@@ -10,7 +10,7 @@
 
 diff -c generic-orig/proof-script.el generic/proof-script.el
 *** generic-orig/proof-script.el	2018-05-13 15:43:28.000000000 +0900
---- generic/proof-script.el	2018-05-13 15:42:38.000000000 +0900
+--- generic/proof-script.el	2018-05-13 21:36:42.000000000 +0900
 ***************
 *** 1685,1691 ****
   	    (setq cmdseen t)
@@ -20,14 +20,15 @@ diff -c generic-orig/proof-script.el generic/proof-script.el
   		       (point))))
   	   ((null type))		; nothing left in buffer
   	   (t
---- 1685,1694 ----
+--- 1685,1695 ----
   	    (setq cmdseen t)
   	    (setq seg (list
   		       'cmd
-! ;		       (buffer-substring-no-properties realstart (point))
 ! 		       (let ((str (buffer-substring-no-properties
-! 				   realstart (point))))
-! 			 (if (string-match "Proof." str) "Show ." str))
+! 		       		   realstart (point))))
+! 			 (let ((pos (string-match "^Proof" str)))
+! 			   (if (and pos (= pos 0))
+! 			       "Show. (* as a replacement of Proof. *)" str)))
   		       (point))))
   	   ((null type))		; nothing left in buffer
   	   (t
@@ -110,25 +111,33 @@ diff -c generic-orig/proof-tree.el generic/proof-tree.el
   		;; put current sequent into hash (if it is not there yet)
 diff -c coq-orig/coq.el coq/coq.el
 *** coq-orig/coq.el	2018-05-12 15:05:57.000000000 +0900
---- coq/coq.el	2018-05-13 15:43:07.000000000 +0900
+--- coq/coq.el	2018-05-14 13:55:18.000000000 +0900
 ***************
-*** 182,188 ****
+*** 182,191 ****
   ;; as superfluous node in the proof tree. Note that we cannot ignore Proof,
   ;; because, Fixpoint does not display the proof goal, see Coq bug #2776. 
   (defcustom coq-proof-tree-ignored-commands-regexp
-!   (concat "^\\(\\(Show\\)\\|\\(Locate\\)\\|"
-            "\\(Theorem\\)\\|\\(Lemma\\)\\|\\(Remark\\)\\|\\(Fact\\)\\|"
-            "\\(Corollary\\)\\|\\(Proposition\\)\\|\\(Definition\\)\\|"
-            "\\(Let\\)\\|\\(Fixpoint\\)\\|\\(CoFixpoint\\)\\)")
---- 182,189 ----
+    (concat "^\\(\\(Show\\)\\|\\(Locate\\)\\|"
+!           "\\(Theorem\\)\\|\\(Lemma\\)\\|\\(Remark\\)\\|\\(Fact\\)\\|"
+!           "\\(Corollary\\)\\|\\(Proposition\\)\\|\\(Definition\\)\\|"
+!           "\\(Let\\)\\|\\(Fixpoint\\)\\|\\(CoFixpoint\\)\\)")
+    "Regexp for `proof-tree-ignored-commands-regexp'."
+    :type 'regexp
+    :group 'coq-proof-tree)
+--- 182,194 ----
   ;; as superfluous node in the proof tree. Note that we cannot ignore Proof,
   ;; because, Fixpoint does not display the proof goal, see Coq bug #2776. 
   (defcustom coq-proof-tree-ignored-commands-regexp
-! ;  (concat "^\\(\\(Show\\)\\|\\(Locate\\)\\|"
-!   (concat "^\\(\\(Locate\\)\\|"
-            "\\(Theorem\\)\\|\\(Lemma\\)\\|\\(Remark\\)\\|\\(Fact\\)\\|"
-            "\\(Corollary\\)\\|\\(Proposition\\)\\|\\(Definition\\)\\|"
-            "\\(Let\\)\\|\\(Fixpoint\\)\\|\\(CoFixpoint\\)\\)")
++ ;; ;  (concat "^\\(\\(Show\\)\\|\\(Locate\\)\\|"
++ ;;   (concat "^\\(\\(Locate\\)\\|"
++ ;;           "\\(Theorem\\)\\|\\(Lemma\\)\\|\\(Remark\\)\\|\\(Fact\\)\\|"
++ ;;           "\\(Corollary\\)\\|\\(Proposition\\)\\|\\(Definition\\)\\|"
++ ;;           "\\(Let\\)\\|\\(Fixpoint\\)\\|\\(CoFixpoint\\)\\)")
+    (concat "^\\(\\(Show\\)\\|\\(Locate\\)\\|"
+!           "\\(Fixpoint\\)\\|\\(CoFixpoint\\)\\)")
+    "Regexp for `proof-tree-ignored-commands-regexp'."
+    :type 'regexp
+    :group 'coq-proof-tree)
 ***************
 *** 220,233 ****
     :group 'coq-proof-tree)
@@ -145,7 +154,7 @@ diff -c coq-orig/coq.el coq/coq.el
     "Regexp for `proof-tree-additional-subgoal-ID-regexp'."
     :type 'regexp
     :group 'coq-proof-tree)
---- 221,235 ----
+--- 223,237 ----
     :group 'coq-proof-tree)
   
   (defcustom coq-proof-tree-update-goal-regexp
@@ -172,7 +181,7 @@ diff -c coq-orig/coq.el coq/coq.el
   
   (defun coq-proof-tree-get-new-subgoals ()
     "Check for new subgoals and issue appropriate Show commands.
---- 1891,1903 ----
+--- 1893,1905 ----
      coq-proof-tree-existentials-state-end-regexp
      coq-proof-tree-instantiated-existential-regexp))
   
@@ -200,7 +209,7 @@ diff -c coq-orig/coq.el coq/coq.el
                              (proof-tree-make-show-goal-callback (car proof-info))
                              '(no-goals-display
                                no-response-display
---- 1946,1958 ----
+--- 1948,1960 ----
           (goto-char start)
           (while (proof-re-search-forward
                   coq-proof-tree-additional-subgoal-ID-regexp end t)
