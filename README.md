@@ -38,7 +38,7 @@ Please apply the patch file in `misc` and rebuild PG.
     $ patch -p0 < traf_top_dir/misc/pg.patch
     $ make
 
-
+Note that this modification of PG is also recommended for Coq 8.6 users because of a slight (preferable, maybe) change of behavior.
 
 
 
