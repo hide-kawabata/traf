@@ -237,3 +237,71 @@ let search_assumption_by_entity entity assumption_list =
 
 
 
+let discharged_node proof_command parent new_dis_node =
+  let proof_command = Str.global_replace (Str.regexp " *\n *") " " proof_command in
+  Printf.fprintf (Util.debugc()) "[FDC] proof_command : <%s>\n%!" proof_command;
+
+  let prepare_discharged_node (tactic : string) =
+    let re_head = Str.regexp ("^\\( *by\\)? *" ^ tactic ^ " *"
+                              ^ "\\(->\\|<-\\|[:]\\)? *") in
+    let re_sep = Str.regexp ("^\\([-+*\\/0-9!() ]\\|\\[.*\\]\\)*") in    
+    let re_id = Str.regexp ("^\\([A-Za-z'_][A-Za-z'_0-9]*\\)\\(.*\\)") in
+    let pc = Str.replace_first re_head "" proof_command in
+    let rec get_id pc acc =
+      try
+        let pc = Str.replace_first re_sep "" pc in
+        let _ = Str.search_forward re_id pc 0 in
+        let (id1, pc) = (Str.replace_matched "\\1" pc, Str.replace_matched "\\2" pc) in
+        if id1 = "as" then raise Not_found;
+        get_id pc (id1::acc)
+      with
+        Not_found -> List.rev acc
+    in
+    let prepare_dis_node tag =
+      let assumed_proposition =
+        search_assumption_by_tag tag parent#assumptions
+      in
+      match assumed_proposition with
+      | None -> []
+      | Some a_p -> [new_dis_node tag a_p]
+    in
+    List.flatten (List.map prepare_dis_node (get_id pc []))
+  in
+
+  let assm_fun _ =
+    (* find out an assumption whose entity is the same as the previous goal *)
+    Printf.fprintf (Util.debugc()) "[FDC assumption] last goal : <%s>\n%!" parent#content;
+    let assumed_proposition = 
+      search_assumption_by_entity parent#content parent#assumptions
+    in      
+    match assumed_proposition with
+    | None -> []
+    | Some (tag, a_p) -> [new_dis_node tag a_p]
+  in
+
+  let check_tactic tactic f cont =
+    Printf.fprintf (Util.debugc()) "[FDC-dn] tactic=<%s> proof_command=<%s>\n%!" tactic proof_command;
+    try ignore (Str.search_forward (Str.regexp ("^\\( *by\\)? *" ^ tactic ^ "[^a-zA-Z_']")) proof_command 0);
+        f tactic
+    with Not_found -> cont ()
+  in
+
+  let f = prepare_discharged_node in
+  let g = assm_fun in
+
+  check_tactic "case" f (fun () -> 
+  check_tactic "move" f (fun () -> 
+  check_tactic "eapply" f (fun () -> 
+  check_tactic "apply" f (fun () -> 
+  check_tactic "inversion" f (fun () ->
+  check_tactic "induction" f (fun () ->
+  check_tactic "destruct" f (fun () ->
+  check_tactic "unfold" f (fun () ->
+  check_tactic "rewrite" f (fun () ->
+  check_tactic "elim" f (fun () ->
+  check_tactic "replace" f (fun () ->
+  check_tactic "done" g (fun () ->
+  check_tactic "trivial" g (fun () ->
+  check_tactic "assumption" g (fun () ->
+  check_tactic "\\[\\]" g (fun () ->
+      [])))))))))))))))

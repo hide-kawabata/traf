@@ -2029,21 +2029,17 @@ diff -c prooftree-0.13/main.ml traf-0.1.1/main.ml
     if !start_config_dialog then
 diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
 *** prooftree-0.13/proof_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/proof_tree.ml	2018-05-19 18:30:36.000000000 +0900
+--- traf-0.1.1/proof_tree.ml	2018-05-21 00:08:15.000000000 +0900
 ***************
 *** 301,306 ****
---- 301,393 ----
+--- 301,323 ----
   *)
   let current_proof_tree = ref None
   
 + let current_dummy_id = ref 1000
 + 
-+ 
 + (** Find a discharged node that corresponds to the "used assumption for the step." *)
 + let find_discharged_node pt state proof_command parent =
-+ 
-+   let proof_command = Str.global_replace (Str.regexp " *\n *") " " proof_command in
-+ 
 +   let new_dis_node tag a_p =
 +     let tmpid = !current_dummy_id in
 +     current_dummy_id := tmpid + 1;
@@ -2053,75 +2049,9 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
 +     dis_node#mark_proved;
 +     Hashtbl.add pt.sequent_hash (string_of_int tmpid) dis_node;
 +     let dis_node = (dis_node :> proof_tree_element) in  
-+     [dis_node]
++     dis_node
 +   in
-+   let prepare_dis_node tag =
-+     let assumed_proposition =
-+       Traf_aux.search_assumption_by_tag tag parent#assumptions
-+     in
-+     match assumed_proposition with
-+     | None -> []
-+     | Some a_p -> new_dis_node tag a_p
-+   in
-+   let prepare_discharged_node (tactic : string) =
-+   let re_head = Str.regexp ("^\\( *by\\)? *" ^ tactic ^ " *"
-+                             ^ "\\(->\\|<-\\|[:]\\)? *") in
-+   let re_sep = Str.regexp ("^\\([-+*\\/0-9!() ]\\|\\[.*\\]\\)*") in
-+ 
-+   let re_id = Str.regexp ("^\\([A-Za-z'_][A-Za-z'_0-9]*\\)\\(.*\\)") in
-+   let pc = Str.replace_first re_head "" proof_command in
-+   let rec get_id pc acc =
-+     try
-+       let pc = Str.replace_first re_sep "" pc in
-+       let _ = Str.search_forward re_id pc 0 in
-+       let (id1, pc) = (Str.replace_matched "\\1" pc, Str.replace_matched "\\2" pc) in
-+       if id1 = "in" then raise Not_found;
-+       get_id pc (id1::acc)
-+     with
-+       Not_found -> List.rev acc
-+   in
-+   let ids = get_id pc [] in
-+   List.flatten (List.map prepare_dis_node ids)
-+ 
-+ 
-+ 
-+   in
-+   let discharged_node =
-+     let check_tactic tactic f cont =
-+       Printf.fprintf (Util.debugc()) "[FDC-dn] tactic=<%s> proof_command=<%s>\n%!" tactic proof_command;
-+       try ignore (Str.search_forward (Str.regexp ("^\\( *by\\)? *" ^ tactic ^ "[^a-zA-Z_']")) proof_command 0);
-+           f tactic
-+       with Not_found -> cont ()
-+     in
-+     let assm_fun parent new_dis_node = 
-+       (fun _ ->
-+         (* find out an assumption whose entity is the same as the previous goal *)
-+         Printf.fprintf (Util.debugc()) "[FDC assumption] last goal : <%s>\n%!" parent#content;
-+         let assumed_proposition = 
-+           Traf_aux.search_assumption_by_entity parent#content parent#assumptions
-+         in      
-+         match assumed_proposition with
-+         | None -> []
-+         | Some (tag, a_p) -> new_dis_node tag a_p
-+       ) in
-+     let f = prepare_discharged_node in
-+     check_tactic "case" f (fun () -> 
-+     check_tactic "move" f (fun () -> 
-+     check_tactic "eapply" f (fun () -> 
-+     check_tactic "apply" f (fun () -> 
-+     check_tactic "inversion" f (fun () ->
-+     check_tactic "induction" f (fun () ->
-+     check_tactic "destruct" f (fun () ->
-+     check_tactic "rewrite" f (fun () ->
-+     check_tactic "elim" f (fun () ->
-+     check_tactic "replace" f (fun () ->
-+     check_tactic "done" (assm_fun parent new_dis_node) (fun () ->
-+     check_tactic "trivial" (assm_fun parent new_dis_node) (fun () ->
-+     check_tactic "assumption" (assm_fun parent new_dis_node) (fun () ->
-+     check_tactic "\\[\\]" (assm_fun parent new_dis_node) (fun () ->
-+         []))))))))))))))
-+ 
-+   in discharged_node
++   Traf_aux.discharged_node proof_command parent new_dis_node
 + 
   
   (** Closes the proof tree [pt] by leaving the current branch open.
@@ -2135,7 +2065,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     assert(List.for_all (fun id -> Hashtbl.mem pt.sequent_hash id = false)
   	   (current_sequent_id :: additional_ids));
     assert(pt.open_goals_count = 0);
---- 618,624 ----
+--- 548,554 ----
       a warning is displayed, if there are more than 1 root nodes.
   *)
   let create_new_layer pt state current_sequent_id current_sequent_text
@@ -2145,7 +2075,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     assert(pt.open_goals_count = 0);
 ***************
 *** 543,548 ****
---- 630,636 ----
+--- 560,566 ----
     let first_sw = 
       pt.window#new_turnstile state current_sequent_id 
         (Some current_sequent_text) in
@@ -2162,7 +2092,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     assert(cheated_flag = false);
     let (ex_got_instantiated, new_existentials) =
       update_existentials pt.existential_hash
---- 696,702 ----
+--- 626,632 ----
   *)
   let add_new_goal pt state proof_command cheated_flag current_sequent_id
       current_sequent_text additional_ids 
@@ -2183,7 +2113,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     let new_goal_ids_rev = 
       list_filter_rev 
         (fun id -> not (Hashtbl.mem pt.sequent_hash id))
---- 717,734 ----
+--- 647,664 ----
     in
     let pc = (pc :> proof_tree_element) in
     set_children parent [pc];
@@ -2214,7 +2144,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
         [] new_goal_ids_rev
     in
     let position_hints = match new_goals with
---- 736,745 ----
+--- 666,675 ----
     let new_goals =
       List.fold_left
         (fun res id ->
@@ -2244,7 +2174,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     pt.window#set_position_hints position_hints;
     (* The uninstantiated existentials are displayed together with the
      * sequent. Therefore, if some existential got instantiated we have
---- 749,769 ----
+--- 679,699 ----
         let last = list_last rest in
         [[last; pc]; [snd; pc]; [snd]; [pc]]
     in
@@ -2268,7 +2198,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
      * sequent. Therefore, if some existential got instantiated we have
 ***************
 *** 734,739 ****
---- 833,847 ----
+--- 763,777 ----
     let pc = (pc :> proof_tree_element) in
     parent#unmark_current;
     set_children parent [pc];
@@ -2286,7 +2216,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     else pc#mark_proved;
 ***************
 *** 784,789 ****
---- 892,916 ----
+--- 822,846 ----
       Hashtbl.find pt.sequent_hash new_current_sequent_id 
     in
     let new_current_sequent = (new_current_sequent :> proof_tree_element) in
@@ -2314,7 +2244,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
       pt.current_sequent_id <- None;
 ***************
 *** 797,802 ****
---- 924,930 ----
+--- 854,860 ----
     add_undo_action pt state undo;
     pt.need_redraw <- true
   
@@ -2331,7 +2261,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     (match !current_proof_tree with
       | Some pt -> 
         if pt.proof_name <> proof_name 
---- 952,958 ----
+--- 882,888 ----
   (* See mli for doc *)
   let process_current_goals state proof_name proof_command cheated_flag
       layer_flag current_sequent_id current_sequent_text additional_ids 
@@ -2348,7 +2278,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     end else
       if pt.current_sequent_id <> (Some current_sequent_id) &&
         Hashtbl.mem pt.sequent_hash current_sequent_id
---- 970,976 ----
+--- 900,906 ----
     then begin
       assert (cheated_flag = false);
       create_new_layer pt state current_sequent_id current_sequent_text
@@ -2384,7 +2314,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
     match !current_proof_tree with
       | None ->
         raise (Proof_tree_error "Update sequent without current proof tree")
---- 981,1016 ----
+--- 911,946 ----
       else
         add_new_goal pt state proof_command cheated_flag current_sequent_id 
   	current_sequent_text additional_ids 
@@ -2430,7 +2360,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
         with
   	| Not_found ->
   	  raise (Proof_tree_error "Update unknown sequent")
---- 1019,1025 ----
+--- 949,955 ----
         then raise (Proof_tree_error "Update sequent on other non-current proof");
         try
   	update_sequent_element pt state 
@@ -2440,7 +2370,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
   	  raise (Proof_tree_error "Update unknown sequent")
 ***************
 *** 956,961 ****
---- 1094,1126 ----
+--- 1024,1056 ----
         assert (pt.current_sequent <> None && pt.current_sequent_id <> None);
         finish_branch pt state proof_command cheated_flag
   	uninstatiated_existentials instantiated_ex_deps;
@@ -2476,7 +2406,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
   	then begin
 ***************
 *** 1045,1050 ****
---- 1210,1216 ----
+--- 1140,1146 ----
       if pt.need_redraw then begin
         pt.window#refresh_and_position;
         pt.window#update_ext_dialog;

@@ -1,3 +1,7 @@
+2018-05-21  Hideyuki Kawabata
+
+	* refactor some functions in proof_tree.ml and traf_aux.ml
+
 2018-05-19  Hideyuki Kawabata
 
 	* modify proof_tree.ml to show multiple assumptions on the tree that are used by one tactic
