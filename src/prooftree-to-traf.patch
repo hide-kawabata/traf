@@ -6,9 +6,9 @@
  * This file is part of "traf".
  *)
 Only in prooftree-0.13: ChangeLog
-diff -c prooftree-0.13/Makefile.in traf-0.1.1/Makefile.in
+diff -c prooftree-0.13/Makefile.in traf-current/Makefile.in
 *** prooftree-0.13/Makefile.in	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/Makefile.in	2018-04-24 16:55:34.000000000 +0900
+--- traf-current/Makefile.in	2018-04-24 16:55:34.000000000 +0900
 ***************
 *** 42,48 ****
   
@@ -142,9 +142,9 @@ diff -c prooftree-0.13/Makefile.in traf-0.1.1/Makefile.in
   	man2html $< | \
   		tail -n +3 |\
   		sed -e 's|<A HREF=".*Return to Main Contents</A>||' \
-diff -c prooftree-0.13/about_window.ml traf-0.1.1/about_window.ml
+diff -c prooftree-0.13/about_window.ml traf-current/about_window.ml
 *** prooftree-0.13/about_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/about_window.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-current/about_window.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 50,55 ****
 --- 50,60 ----
@@ -184,9 +184,9 @@ diff -c prooftree-0.13/about_window.ml traf-0.1.1/about_window.ml
   	  (* ~website_label:string -> *)
   	  (* ~parent:#window_skel -> *)
   	  (* ~destroy_with_parent:bool -> *)
-diff -c prooftree-0.13/configuration.ml traf-0.1.1/configuration.ml
+diff -c prooftree-0.13/configuration.ml traf-current/configuration.ml
 *** prooftree-0.13/configuration.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/configuration.ml	2018-04-24 18:53:41.000000000 +0900
+--- traf-current/configuration.ml	2018-04-24 18:53:41.000000000 +0900
 ***************
 *** 42,48 ****
   let config_file_location = 
@@ -647,9 +647,9 @@ diff -c prooftree-0.13/configuration.ml traf-0.1.1/configuration.ml
        proof_tree_sep_adjustment; subtree_sep_adjustment; 
        command_length_adjustment; level_dist_adjustment; layer_sep_adjustment;
        drag_accel_adjustment; default_size_width_adjustment; 
-diff -c prooftree-0.13/configure traf-0.1.1/configure
+diff -c prooftree-0.13/configure traf-current/configure
 *** prooftree-0.13/configure	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/configure	2018-04-24 10:54:55.000000000 +0900
+--- traf-current/configure	2018-04-24 10:54:55.000000000 +0900
 ***************
 *** 119,144 ****
   
@@ -713,10 +713,10 @@ diff -c prooftree-0.13/configure traf-0.1.1/configure
       echo library LablGtk not found. Please install package liblablgtk2-ocaml-dev.
       exit 1
   fi
-Only in traf-0.1.1: conv_latex.ml
-diff -c prooftree-0.13/coq.ml traf-0.1.1/coq.ml
+Only in traf-current: conv_latex.ml
+diff -c prooftree-0.13/coq.ml traf-current/coq.ml
 *** prooftree-0.13/coq.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/coq.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-current/coq.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 106,111 ****
 --- 106,112 ----
@@ -754,9 +754,9 @@ diff -c prooftree-0.13/coq.ml traf-0.1.1/coq.ml
       | _ -> assert false
   
 !   end
-diff -c prooftree-0.13/draw_tree.ml traf-0.1.1/draw_tree.ml
+diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
 *** prooftree-0.13/draw_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/draw_tree.ml	2018-05-02 10:34:13.000000000 +0900
+--- traf-current/draw_tree.ml	2018-05-02 10:34:13.000000000 +0900
 ***************
 *** 551,556 ****
 --- 551,564 ----
@@ -1534,9 +1534,9 @@ diff -c prooftree-0.13/draw_tree.ml traf-0.1.1/draw_tree.ml
     );
     clone
   
-diff -c prooftree-0.13/emacs_commands.ml traf-0.1.1/emacs_commands.ml
+diff -c prooftree-0.13/emacs_commands.ml traf-current/emacs_commands.ml
 *** prooftree-0.13/emacs_commands.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/emacs_commands.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-current/emacs_commands.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 53,61 ****
   
@@ -1579,9 +1579,9 @@ diff -c prooftree-0.13/emacs_commands.ml traf-0.1.1/emacs_commands.ml
 ! let emacs_send_proof_script_in_current_goals script =
 !   emacs_long_callback "insert-proof-script-in-current-goals" script
 !     
-diff -c prooftree-0.13/gtk_ext.ml traf-0.1.1/gtk_ext.ml
+diff -c prooftree-0.13/gtk_ext.ml traf-current/gtk_ext.ml
 *** prooftree-0.13/gtk_ext.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/gtk_ext.ml	2018-05-02 10:34:13.000000000 +0900
+--- traf-current/gtk_ext.ml	2018-05-02 10:34:13.000000000 +0900
 ***************
 *** 31,37 ****
   *)
@@ -1647,9 +1647,9 @@ diff -c prooftree-0.13/gtk_ext.ml traf-0.1.1/gtk_ext.ml
   end
   
   
-diff -c prooftree-0.13/help_window.ml traf-0.1.1/help_window.ml
+diff -c prooftree-0.13/help_window.ml traf-current/help_window.ml
 *** prooftree-0.13/help_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/help_window.ml	2018-04-24 16:45:21.000000000 +0900
+--- traf-current/help_window.ml	2018-04-24 16:45:21.000000000 +0900
 ***************
 *** 61,67 ****
 --- 61,70 ----
@@ -1760,9 +1760,9 @@ diff -c prooftree-0.13/help_window.ml traf-0.1.1/help_window.ml
      (Italic, "Configuration");
      (Default, " item displays the configuration dialog. Changes in this dialog \
   immediately take effect. In this dialog, the ");
-diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
+diff -c prooftree-0.13/input.ml traf-current/input.ml
 *** prooftree-0.13/input.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/input.ml	2018-05-13 20:28:44.000000000 +0900
+--- traf-current/input.ml	2018-05-13 20:28:44.000000000 +0900
 ***************
 *** 420,434 ****
     (* Printf.fprintf (debugc()) "GS cont %d - %d enter\n%!" i len; *)
@@ -1976,9 +1976,9 @@ diff -c prooftree-0.13/input.ml traf-0.1.1/input.ml
     Scanf.sscanf first_line "second line %3d\n"
       (fun second_line_len ->
         (* Printf.fprintf (debugc()) "second line cont %d\n%!" second_line_len; *)
-diff -c prooftree-0.13/main.ml traf-0.1.1/main.ml
+diff -c prooftree-0.13/main.ml traf-current/main.ml
 *** prooftree-0.13/main.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/main.ml	2018-04-24 17:35:32.000000000 +0900
+--- traf-current/main.ml	2018-04-24 17:35:32.000000000 +0900
 ***************
 *** 97,110 ****
   *)
@@ -2027,9 +2027,9 @@ diff -c prooftree-0.13/main.ml traf-0.1.1/main.ml
   	"Entering LablGTK main loop ...\n\n%!")
       Version.version;
     if !start_config_dialog then
-diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
+diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
 *** prooftree-0.13/proof_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/proof_tree.ml	2018-05-21 00:08:15.000000000 +0900
+--- traf-current/proof_tree.ml	2018-05-21 00:08:15.000000000 +0900
 ***************
 *** 301,306 ****
 --- 301,323 ----
@@ -2414,9 +2414,9 @@ diff -c prooftree-0.13/proof_tree.ml traf-0.1.1/proof_tree.ml
       end;
       pt.sequent_area_needs_refresh <- false;
       pt.need_redraw <- false
-diff -c prooftree-0.13/proof_tree.mli traf-0.1.1/proof_tree.mli
+diff -c prooftree-0.13/proof_tree.mli traf-current/proof_tree.mli
 *** prooftree-0.13/proof_tree.mli	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/proof_tree.mli	2018-04-23 16:25:08.000000000 +0900
+--- traf-current/proof_tree.mli	2018-04-23 16:25:08.000000000 +0900
 ***************
 *** 71,77 ****
   val process_current_goals :
@@ -2452,9 +2452,9 @@ diff -c prooftree-0.13/proof_tree.mli traf-0.1.1/proof_tree.mli
   
   
   (** Switch to a different open goal.
-diff -c prooftree-0.13/proof_window.ml traf-0.1.1/proof_window.ml
+diff -c prooftree-0.13/proof_window.ml traf-current/proof_window.ml
 *** prooftree-0.13/proof_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/proof_window.ml	2018-05-02 10:34:13.000000000 +0900
+--- traf-current/proof_window.ml	2018-05-02 10:34:13.000000000 +0900
 ***************
 *** 101,106 ****
 --- 101,109 ----
@@ -3033,12 +3033,12 @@ diff -c prooftree-0.13/proof_window.ml traf-0.1.1/proof_window.ml
       ignore(top_window#parse_geometry geometry_string);
 Only in prooftree-0.13: prooftree.1
 Only in prooftree-0.13: prooftree.man.html
-Common subdirectories: prooftree-0.13/test and traf-0.1.1/test
-Only in traf-0.1.1: traf.1
-Only in traf-0.1.1: traf_aux.ml
-diff -c prooftree-0.13/tree_layers.ml traf-0.1.1/tree_layers.ml
+Common subdirectories: prooftree-0.13/test and traf-current/test
+Only in traf-current: traf.1
+Only in traf-current: traf_aux.ml
+diff -c prooftree-0.13/tree_layers.ml traf-current/tree_layers.ml
 *** prooftree-0.13/tree_layers.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/tree_layers.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-current/tree_layers.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 166,176 ****
     (** Draw the content of this layer relative to the specified left
@@ -3122,9 +3122,9 @@ diff -c prooftree-0.13/tree_layers.ml traf-0.1.1/tree_layers.ml
   	then l#find_node_for_point_in_layer left top bx by
   	else 
   	  let top = top + !current_config.layer_sep + l#height in
-diff -c prooftree-0.13/util.ml traf-0.1.1/util.ml
+diff -c prooftree-0.13/util.ml traf-current/util.ml
 *** prooftree-0.13/util.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/util.ml	2018-04-23 16:21:10.000000000 +0900
+--- traf-current/util.ml	2018-04-23 16:21:10.000000000 +0900
 ***************
 *** 285,290 ****
 --- 285,298 ----
@@ -3157,11 +3157,11 @@ diff -c prooftree-0.13/util.ml traf-0.1.1/util.ml
 !       let c = open_out (homedir () ^ "/.traf-debug") in
         copt := Some c;
         c
-diff -c prooftree-0.13/version.txt traf-0.1.1/version.txt
+diff -c prooftree-0.13/version.txt traf-current/version.txt
 *** prooftree-0.13/version.txt	2017-01-03 19:35:43.000000000 +0900
---- traf-0.1.1/version.txt	2018-05-02 10:35:24.000000000 +0900
+--- traf-current/version.txt	2018-05-21 09:24:30.000000000 +0900
 ***************
 *** 1 ****
 ! 0.13
 --- 1 ----
-! 0.1.1
+! 0.1.2

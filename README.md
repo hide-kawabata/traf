@@ -12,15 +12,15 @@ Traf is an extention to a proof tree viewer named Prooftree. Traf version 0.1 is
 
 Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Yuuki Sasaki and Mai Kimura, at Hiroshima City University.
 
+This is version 0.1.2 of Traf.
 
-
-## Preparation
+## Requirement
 
 Following programs are required to build and run Traf.
-Older versions of them might requrie some modification on the library and/or Traf's source.
+Numbers indicate tested versions of corresponding software.
 
-- Coq 8.4, 8.6, 8.7, 8.8
-- Proof General 4.4.1pre (use of Coq 8.7 or 8.8 requires rebuild of PG; see below)
+- Coq 8.6.1, 8.7.2, 8.8.0 (with or without mathcomp 1.7.0)
+- Proof General 4.4.1pre (use of Coq 8.7 or later requires rebuild of PG; see below)
 - GTK+ 2.0
 - Lablgtk 2.18.5
 - OCaml 4.05.0
@@ -30,7 +30,7 @@ Checked environments:
 - macOS Sierra 10.12.6
 - ubuntu 16.04 LTS
 
-#### Note: for users of Coq 8.7 and 8.8
+#### Note: for users of Coq 8.7 or later
 Proof General requires slight modification.
 Please apply the patch file in `misc` and rebuild PG.
 
@@ -55,7 +55,7 @@ You can copy `traf` anywhere you want.
 
 #### FYI: What is done by `misc/quick_build.sh`:
 
-1. Obtain `prooftree-0.13.tar.gz` and check files.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in the directory `misc`.
+1. Obtain `prooftree-0.13.tar.gz`.  See `https://askra.de/software/prooftree/` for details of Prooftree. Just for convenience, we have the tarball in the directory `misc`.
 
     ```
     $ cd traf_top_dir

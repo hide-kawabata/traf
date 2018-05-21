@@ -1,5 +1,6 @@
 2018-05-21  Hideyuki Kawabata
 
+	* release version 0.1.2
 	* refactor some functions in proof_tree.ml and traf_aux.ml
 
 2018-05-19  Hideyuki Kawabata
