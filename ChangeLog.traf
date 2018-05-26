@@ -1,3 +1,7 @@
+2018-05-26  Hideyuki Kawabata
+
+	* change linestyle when the step is not an ordinary one
+
 2018-05-21  Hideyuki Kawabata
 
 	* release version 0.1.2

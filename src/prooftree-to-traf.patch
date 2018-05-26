@@ -756,7 +756,7 @@ diff -c prooftree-0.13/coq.ml traf-current/coq.ml
 !   end
 diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
 *** prooftree-0.13/draw_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-current/draw_tree.ml	2018-05-02 10:34:13.000000000 +0900
+--- traf-current/draw_tree.ml	2018-05-26 16:28:45.000000000 +0900
 ***************
 *** 551,556 ****
 --- 551,564 ----
@@ -1430,7 +1430,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
   
                                 (***************** inside proof_command_length *)
     (** Compute the line offsets for proof-command nodes, see
---- 1741,1774 ----
+--- 1741,1799 ----
   	~width:w ~height:h ~filled:true ();
         restore_gc drawable gc
       end;
@@ -1454,8 +1454,33 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
 !     in
 !     text_begin_point <- x_max;
 !     text_end_point <- x_max + layout_width;
+! 
+!     (* check if the step is not an ordinary inference, change linestyle *)
+!     let check_children cs =
+!       let nonProvens = List.filter (fun n -> (n#content).[0] <> '[') cs in
+!       match nonProvens with
+!       | [a] -> let content_before = parent_ts#content in
+!                let content_after = a#content in
+!                if content_before = content_after then true else false
+!       | _ -> false
+!     in
+!     let check_command ct =
+!       try 
+!         let _ = Str.search_forward
+!                   (Str.regexp "^\\(assert\\|have\\)") ct 0 in true
+!       with _ -> false
+!     in
+!     if check_command self#content || check_children children then
+!       Gdk.GC.set_line_attributes (drawable#gc)
+!         ~width:((!current_config.turnstile_line_width)+1)
+!         ~style:`SOLID ~cap:`ROUND ~join:`ROUND;
 !     drawable#line ~x:x_min ~y:y' ~x:x_max ~y:y'; (* draw_line *)
+!     (* reset line attributes *)
+!     Gdk.GC.set_line_attributes (drawable#gc)
+!       ~width:(!current_config.turnstile_line_width)
+!       ~style:`SOLID ~cap:`ROUND ~join:`ROUND;
 !     drawable#put_layout ~x:x_max ~y:ypo layout;
+! 
       if selected 
       then
         let w = layout_width + !current_config.turnstile_line_width in
@@ -1474,7 +1499,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
       let corner_slope = (float_of_int width) /. (float_of_int height) in
       (* slope and corner_slope are actually inverse slopes: 
        * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
---- 1776,1783 ----
+--- 1801,1808 ----
     *)
     method line_offset slope = 
       let sign = if slope >= 0.0 then 1 else -1 in
@@ -1485,7 +1510,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
        * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
 ***************
 *** 1629,1634 ****
---- 1791,1817 ----
+--- 1816,1842 ----
         ((width/2 + line_sep) * sign,
          int_of_float(float_of_int(width/2 + line_sep) /. slope +. 0.5) * sign)
   
@@ -1515,7 +1540,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
       self#set_node_size;
 ***************
 *** 1694,1704 ****
---- 1877,1894 ----
+--- 1902,1919 ----
     then cloned_selected := Some clone;
     set_children clone cloned_children;
     (match node#branch_state with
