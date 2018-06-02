@@ -756,7 +756,7 @@ diff -c prooftree-0.13/coq.ml traf-current/coq.ml
 !   end
 diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
 *** prooftree-0.13/draw_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-current/draw_tree.ml	2018-05-26 16:28:45.000000000 +0900
+--- traf-current/draw_tree.ml	2018-06-02 16:32:34.000000000 +0900
 ***************
 *** 551,556 ****
 --- 551,564 ----
@@ -1416,45 +1416,80 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
   
                                 (***************** inside proof_command_length *)
 ***************
-*** 1601,1613 ****
-  	~width:w ~height:h ~filled:true ();
+*** 1587,1621 ****
+       * Printf.fprintf (debugc()) "DRAW TURN %s l %d t %d x %d y %d\n%!" 
+       *   self#debug_name left top x y;
+       *)
+      let crea = List.exists (fun e -> e.existential_mark) fresh_existentials in
+      let inst = List.exists (fun e -> e.existential_mark) inst_existentials in
+      if crea || inst
+      then begin
+-       let w = layout_width + 1 * !current_config.subtree_sep in
+-       let h = layout_height + 2 * !current_config.subtree_sep in
+        let gc = save_gc drawable in
+        if crea 
+        then drawable#set_foreground (`COLOR !existential_create_gdk_color)
+        else drawable#set_foreground (`COLOR !existential_instantiate_gdk_color);
+!       drawable#arc ~x:(x - w/2) ~y:(y - h/2) 
+! 	~width:w ~height:h ~filled:true ();
         restore_gc drawable gc
       end;
 !     drawable#put_layout ~x:(x - layout_width/2) ~y:(y - layout_height/2) layout;
-      if selected 
-      then
-        let w = layout_width + !current_config.turnstile_line_width in
-        let h = layout_height + !current_config.turnstile_line_width in
+!     if selected 
+!     then
+!       let w = layout_width + !current_config.turnstile_line_width in
+!       let h = layout_height + !current_config.turnstile_line_width in
         drawable#rectangle 
 ! 	~x:(x - w/2) ~y:(y - h/2) ~width:w ~height:h ();
-  
+! 
                                 (***************** inside proof_command_length *)
     (** Compute the line offsets for proof-command nodes, see
---- 1741,1799 ----
-  	~width:w ~height:h ~filled:true ();
+        {!proof_tree_element.line_offset}
+    *)
+    method line_offset slope = 
+      let sign = if slope >= 0.0 then 1 else -1 in
+!     let line_sep = !current_config.line_sep in
+      let corner_slope = (float_of_int width) /. (float_of_int height) in
+      (* slope and corner_slope are actually inverse slopes: 
+       * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
+--- 1727,1804 ----
+       * Printf.fprintf (debugc()) "DRAW TURN %s l %d t %d x %d y %d\n%!" 
+       *   self#debug_name left top x y;
+       *)
++     (*--- compute (x_min, x_max): endpoint of the line segment ---*)
++     let parent_ts = match parent with
++       | None -> assert false
++       | Some p -> p
++     in
++     let ypo = y + !current_config.turnstile_left_bar_y_offset in
++     let ptsw = parent_ts#layout_width in
++     let (s, e) = (x - (ptsw / 2), x + (ptsw / 2)) in
++     let (x_min, x_max) =
++       self#iter_children 
++         left 0 (s, e) (* y is not used *)
++         (fun left _ (x_min, x_max) ts ->
++           let cx = ts#get_x_coordinate left in
++           let cw = ts#layout_width in
++           ((min x_min (cx - (cw / 2)), max x_max (cx + (cw / 2))), true))
++     in
++     let pc_width = layout_width + !current_config.turnstile_line_width in
++     let pc_height = layout_height + !current_config.turnstile_line_width in
++     text_begin_point <- x_max;
++     text_end_point <- x_max + layout_width;
++     (*---- existential variables -----------------------*)
+      let crea = List.exists (fun e -> e.existential_mark) fresh_existentials in
+      let inst = List.exists (fun e -> e.existential_mark) inst_existentials in
+      if crea || inst
+      then begin
+        let gc = save_gc drawable in
+        if crea 
+        then drawable#set_foreground (`COLOR !existential_create_gdk_color)
+        else drawable#set_foreground (`COLOR !existential_instantiate_gdk_color);
+!       drawable#arc ~x:x_max ~y:ypo
+! 	~width:pc_width ~height:pc_height ~filled:true ();
         restore_gc drawable gc
       end;
 !     (*---- draw_proof_command ------------------------*)
-!     let parent_ts = match parent with
-!       | None -> assert false
-!       | Some p -> p
-!     in
-!     let ypo = y + !current_config.turnstile_left_bar_y_offset in
-!     let ptsw = parent_ts#layout_width in
-!     let (s, e) = (x - (ptsw / 2), x + (ptsw / 2)) in
-!     let (x_min, x_max) =
-!       self#iter_children 
-!         left 0 (s, e) (* y is not used *)
-!         (fun left _ (x_min, x_max) ts ->
-!           let cx = ts#get_x_coordinate left in
-!           let cw = ts#layout_width in
-!           ((min x_min (cx - (cw / 2)), max x_max (cx + (cw / 2))), true))
-!     in
-!     let y' = ypo + layout_height / 2
-!     in
-!     text_begin_point <- x_max;
-!     text_end_point <- x_max + layout_width;
-! 
 !     (* check if the step is not an ordinary inference, change linestyle *)
 !     let check_children cs =
 !       let nonProvens = List.filter (fun n -> (n#content).[0] <> '[') cs in
@@ -1474,32 +1509,20 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
 !       Gdk.GC.set_line_attributes (drawable#gc)
 !         ~width:((!current_config.turnstile_line_width)+1)
 !         ~style:`SOLID ~cap:`ROUND ~join:`ROUND;
+!     let y' = ypo + layout_height / 2 in
 !     drawable#line ~x:x_min ~y:y' ~x:x_max ~y:y'; (* draw_line *)
 !     (* reset line attributes *)
 !     Gdk.GC.set_line_attributes (drawable#gc)
 !       ~width:(!current_config.turnstile_line_width)
 !       ~style:`SOLID ~cap:`ROUND ~join:`ROUND;
 !     drawable#put_layout ~x:x_max ~y:ypo layout;
-! 
-      if selected 
-      then
-        let w = layout_width + !current_config.turnstile_line_width in
-        let h = layout_height + !current_config.turnstile_line_width in
+!     if selected then
         drawable#rectangle 
-! 	~x:x_max ~y:(ypo - 2) ~width:w ~height:(h + 5) ();
-  
+! 	~x:x_max ~y:(ypo - 2) ~width:pc_width ~height:(pc_height + 5) ();
                                 (***************** inside proof_command_length *)
++ 
     (** Compute the line offsets for proof-command nodes, see
-***************
-*** 1615,1621 ****
-    *)
-    method line_offset slope = 
-      let sign = if slope >= 0.0 then 1 else -1 in
-!     let line_sep = !current_config.line_sep in
-      let corner_slope = (float_of_int width) /. (float_of_int height) in
-      (* slope and corner_slope are actually inverse slopes: 
-       * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
---- 1801,1808 ----
+        {!proof_tree_element.line_offset}
     *)
     method line_offset slope = 
       let sign = if slope >= 0.0 then 1 else -1 in
@@ -1510,7 +1533,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
        * they are d_x / d_y. This is because d_y is guaranteed to be non_zero,
 ***************
 *** 1629,1634 ****
---- 1816,1842 ----
+--- 1812,1838 ----
         ((width/2 + line_sep) * sign,
          int_of_float(float_of_int(width/2 + line_sep) /. slope +. 0.5) * sign)
   
@@ -1540,7 +1563,7 @@ diff -c prooftree-0.13/draw_tree.ml traf-current/draw_tree.ml
       self#set_node_size;
 ***************
 *** 1694,1704 ****
---- 1902,1919 ----
+--- 1898,1915 ----
     then cloned_selected := Some clone;
     set_children clone cloned_children;
     (match node#branch_state with
@@ -2479,7 +2502,7 @@ diff -c prooftree-0.13/proof_tree.mli traf-current/proof_tree.mli
   (** Switch to a different open goal.
 diff -c prooftree-0.13/proof_window.ml traf-current/proof_window.ml
 *** prooftree-0.13/proof_window.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-current/proof_window.ml	2018-05-02 10:34:13.000000000 +0900
+--- traf-current/proof_window.ml	2018-06-02 16:32:51.000000000 +0900
 ***************
 *** 101,106 ****
 --- 101,109 ----
@@ -2934,7 +2957,7 @@ diff -c prooftree-0.13/proof_window.ml traf-current/proof_window.ml
       GButton.button ~label:"Menu" ~packing:(button_h_box#pack) ()
     in
 ***************
-*** 1414,1448 ****
+*** 1414,1425 ****
         message_label context_menu name
     in
     let clone_fun () =
@@ -2947,30 +2970,7 @@ diff -c prooftree-0.13/proof_window.ml traf-current/proof_window.ml
        `I("Show current", proof_window#reposition_current_node);
        `I("Show selected", proof_window#show_selected_node);
        `I("Existentials", proof_window#show_existential_window);
-       `I("Configuration", show_config_window);
-       `I("Help", show_help_window);
-       `I("About", show_about_window);
-       `I("Exit", (fun _ -> exit 0));
-      ] in
-    let context_menu_entries =
-      [`I("Undo to point", proof_window#undo_to_point);
-       `I("Insert command", proof_window#insert_proof_command);
-       `I("Insert subproof", proof_window#insert_subproof);
-       `S
-      ] @ main_menu_entries
-    in
-    GToolbox.build_menu main_menu ~entries:main_menu_entries;
-    GToolbox.build_menu context_menu ~entries:context_menu_entries;
-    ignore(context_menu#connect#deactivate 
-             ~callback:(proof_window#context_menu_deactivated));
-! 
-    top_window#set_title (name ^ " proof tree");
-    drawable#set_line_attributes 
-      ~width:(!current_config.turnstile_line_width) ();
-    drawing_area#misc#set_has_tooltip true;
-    ignore(drawing_area#misc#connect#query_tooltip
-     	   ~callback:proof_window#drawable_tooltip);
---- 1528,1593 ----
+--- 1528,1556 ----
         message_label context_menu name
     in
     let clone_fun () =
@@ -2999,12 +2999,30 @@ diff -c prooftree-0.13/proof_window.ml traf-current/proof_window.ml
 ! 
        `I("Show current", proof_window#reposition_current_node);
        `I("Show selected", proof_window#show_selected_node);
-+ (*
        `I("Existentials", proof_window#show_existential_window);
-+  *)
-       `I("Configuration", show_config_window);
-       `I("Help", show_help_window);
-       `I("About", show_about_window);
+***************
+*** 1429,1448 ****
+       `I("Exit", (fun _ -> exit 0));
+      ] in
+    let context_menu_entries =
+      [`I("Undo to point", proof_window#undo_to_point);
+       `I("Insert command", proof_window#insert_proof_command);
+       `I("Insert subproof", proof_window#insert_subproof);
+       `S
+      ] @ main_menu_entries
+    in
+    GToolbox.build_menu main_menu ~entries:main_menu_entries;
+    GToolbox.build_menu context_menu ~entries:context_menu_entries;
+    ignore(context_menu#connect#deactivate 
+             ~callback:(proof_window#context_menu_deactivated));
+! 
+    top_window#set_title (name ^ " proof tree");
+    drawable#set_line_attributes 
+      ~width:(!current_config.turnstile_line_width) ();
+    drawing_area#misc#set_has_tooltip true;
+    ignore(drawing_area#misc#connect#query_tooltip
+     	   ~callback:proof_window#drawable_tooltip);
+--- 1560,1591 ----
        `I("Exit", (fun _ -> exit 0));
       ] in
     let context_menu_entries =
@@ -3039,7 +3057,7 @@ diff -c prooftree-0.13/proof_window.ml traf-current/proof_window.ml
      	   ~callback:proof_window#drawable_tooltip);
 ***************
 *** 1497,1502 ****
---- 1642,1657 ----
+--- 1640,1655 ----
   	     main_menu#popup ~button:0 
   	       ~time:(GtkMain.Main.get_current_event_time ())));
   
