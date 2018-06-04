@@ -54,10 +54,10 @@ object (self)
 
   (* for sequent text (turnstile) *)
   method check_id_of_sequent sequent =
-    let find_id_pair = [("\\([a-zA-Z')_][a-zA-Z')_0-9]+\\)", "mathrmLPAR"^"\\1"^"mathrmRPAR "); (* id *)
-			("\\([a-zA-Z'][a-zA-Z')_0-9]+\\),", "mathrmLPAR"^"\\1"^"mathrmRPAR, "); (* id *)
-			("[|\\([a-zA-Z'_][a-zA-Z')_0-9]+\\])","[|mathrmLPAR"^"\\1"^"mathrmRPAR]"); (* [|id... ?? *)
-		        ("\\([a-zA-Z'][a-zA-Z')_0-9]+\\)$","\\mathrm{"^"\\1"^"}"); (* id$ *)
+    let find_id_pair = [("\\([a-zA-Z')_][a-zA-Z')_0-9]*\\)", "mathrmLPAR"^"\\1"^"mathrmRPAR "); (* id *)
+			("\\([a-zA-Z'][a-zA-Z')_0-9]*\\),", "mathrmLPAR"^"\\1"^"mathrmRPAR, "); (* id *)
+			("[|\\([a-zA-Z'_][a-zA-Z')_0-9]*\\])","[|mathrmLPAR"^"\\1"^"mathrmRPAR]"); (* [|id... ?? *)
+		        ("\\([a-zA-Z'][a-zA-Z')_0-9]*\\)$","\\mathrm{"^"\\1"^"}"); (* id$ *)
 		       ]
     in
     let rec replace_ids seq replace_pair=
@@ -71,7 +71,6 @@ object (self)
 
   method check_str str seq_or_com=
     let symbols =[
-                  ("\\", "BACKSLASH");
                   ("{", "\\{");
                   ("}", "\\}");
                   ("⊢","VDASH");
@@ -83,6 +82,7 @@ object (self)
                   ,"EXISTS");
 		  ("/\\", "WEDGE");
                   ("\\\\/", "VEE");
+                  ("\\", "BACKSLASH");
 		  ("_", "\\_");
 		  ("|", "MID");
 		  ("●",

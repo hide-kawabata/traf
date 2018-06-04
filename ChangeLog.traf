@@ -1,3 +1,7 @@
+2018-06-04  Hideyuki Kawabata
+
+	* fix a bug of conv_latex.ml
+
 2018-06-02  Hideyuki Kawabata
 
 	* adapt the facility of prooftree for displaying existential variables
