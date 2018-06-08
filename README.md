@@ -39,8 +39,8 @@ Please apply the patch file in `misc` and rebuild PG.
     $ patch -p0 < traf_top_dir/misc/pg.patch
     $ make
 
-Note that this modification of PG is also recommended for Coq 8.6 users because of a slight (preferable, maybe) change of behavior.
-
+Note 1: This modification of PG is also recommended for Coq 8.6 users because of a slight (preferable, maybe) change of behavior.
+Note 2: Proof General v4.4 (released on 19 Sep 2016) is not supported. Please use later versions.
 
 
 ## Building Traf
