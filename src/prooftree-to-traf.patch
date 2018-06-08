@@ -1810,7 +1810,7 @@ diff -c prooftree-0.13/help_window.ml traf-current/help_window.ml
   immediately take effect. In this dialog, the ");
 diff -c prooftree-0.13/input.ml traf-current/input.ml
 *** prooftree-0.13/input.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-current/input.ml	2018-05-13 20:28:44.000000000 +0900
+--- traf-current/input.ml	2018-06-09 03:17:06.000000000 +0900
 ***************
 *** 420,434 ****
     (* Printf.fprintf (debugc()) "GS cont %d - %d enter\n%!" i len; *)
@@ -1845,6 +1845,19 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
     else get_string_cont s i len continuation_fn ()
   
 ***************
+*** 535,540 ****
+--- 535,544 ----
+      layer_string proof_name proof_command current_sequent_text 
+      additional_ids_string existentials_string =
+    (* Printf.fprintf (debugc()) "PCGF\n%!"; *)
++   (* PG sometimes sends "Backtrack" command to Traf
++      when Coq 8.6 or 8.7 is used. *)
++   try ignore (Str.search_forward (Str.regexp "^Backtrack")
++                 proof_command 0) with Not_found ->
+    let cheated_flag = match cheated_string with
+      | "not-cheated" -> false
+      | "cheated" -> true
+***************
 *** 555,568 ****
     in
     let proof_name = chop_final_newlines proof_name in
@@ -1860,7 +1873,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
     current_parser := !message_start_parser
   
       
---- 555,573 ----
+--- 559,577 ----
     in
     let proof_name = chop_final_newlines proof_name in
     let proof_command = chop_final_newlines proof_command in
@@ -1890,7 +1903,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
   
   
   
---- 607,617 ----
+--- 611,621 ----
   			  (fun existentials_string ->
   			    parse_current_goals_finish state current_sequent_id
   			      cheated_string layer_string
@@ -1912,7 +1925,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
     current_parser := !message_start_parser
   
   
---- 636,644 ----
+--- 640,648 ----
   *)
   let parse_update_sequent_finish state sequent_id proof_name sequent_text =
     let proof_name = chop_final_newlines proof_name in
@@ -1931,7 +1944,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
   
   
   
---- 658,664 ----
+--- 662,668 ----
   	  get_string sequent_text_bytes
   	    (fun sequent_text ->
   	      parse_update_sequent_finish state sequent_id 
@@ -1948,7 +1961,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
   
   
   
---- 695,701 ----
+--- 699,705 ----
       (fun state new_current_id proof_name_bytes ->
         get_string proof_name_bytes
   	(fun proof_name ->
@@ -1966,7 +1979,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
   
   
   
---- 757,766 ----
+--- 761,770 ----
   	      get_string existential_bytes
   		(fun existentials_string ->
   		  parse_branch_finished_finish 
@@ -1986,7 +1999,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
   	  Proof_tree.process_proof_complete state proof_name;
   	  current_parser := !message_start_parser))
   
---- 782,788 ----
+--- 786,792 ----
       (fun state proof_name_bytes ->
         get_string proof_name_bytes 
   	(fun proof_name ->
@@ -1996,7 +2009,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
   
 ***************
 *** 805,810 ****
---- 816,822 ----
+--- 820,826 ----
       @param proof_name full proof name (as raw data section string)
   *)
   let parse_quit_proof_finish proof_name =
@@ -2006,7 +2019,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
     current_parser := !message_start_parser
 ***************
 *** 839,844 ****
---- 851,857 ----
+--- 855,861 ----
       @raise Sys_blocked_io if parsing gets interrupted
   *)
   let parse_command command =
@@ -2016,7 +2029,7 @@ diff -c prooftree-0.13/input.ml traf-current/input.ml
     Scanf.bscanf com_buf "%s " 
 ***************
 *** 866,871 ****
---- 879,885 ----
+--- 883,889 ----
       @raise Sys_blocked_io if parsing gets interrupted
   *)
   let read_second_line first_line =
@@ -2077,7 +2090,7 @@ diff -c prooftree-0.13/main.ml traf-current/main.ml
     if !start_config_dialog then
 diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
 *** prooftree-0.13/proof_tree.ml	2017-01-03 19:35:43.000000000 +0900
---- traf-current/proof_tree.ml	2018-05-21 00:08:15.000000000 +0900
+--- traf-current/proof_tree.ml	2018-06-09 03:02:58.000000000 +0900
 ***************
 *** 301,306 ****
 --- 301,323 ----
@@ -2105,7 +2118,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
   (** Closes the proof tree [pt] by leaving the current branch open.
       Additionally clear {!current_proof_tree}.
 ***************
-*** 531,537 ****
+*** 531,540 ****
       a warning is displayed, if there are more than 1 root nodes.
   *)
   let create_new_layer pt state current_sequent_id current_sequent_text
@@ -2113,24 +2126,118 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
     assert(List.for_all (fun id -> Hashtbl.mem pt.sequent_hash id = false)
   	   (current_sequent_id :: additional_ids));
     assert(pt.open_goals_count = 0);
---- 548,554 ----
+    let (ex_got_instantiated, new_existentials) =
+      update_existentials pt.existential_hash 
+        uninstantiated_existentials instantiated_ex_deps in
+--- 548,562 ----
       a warning is displayed, if there are more than 1 root nodes.
   *)
   let create_new_layer pt state current_sequent_id current_sequent_text
 !     additional_ids uninstantiated_existentials instantiated_ex_deps a_list =
+! (* Remove following assertion to let "Unshelve." create a separate tree
+!    in the window.
     assert(List.for_all (fun id -> Hashtbl.mem pt.sequent_hash id = false)
   	   (current_sequent_id :: additional_ids));
++ *)
++ (* Remove ******************************************
     assert(pt.open_goals_count = 0);
++  *)
+    let (ex_got_instantiated, new_existentials) =
+      update_existentials pt.existential_hash 
+        uninstantiated_existentials instantiated_ex_deps in
 ***************
-*** 543,548 ****
---- 560,566 ----
+*** 543,554 ****
+    let first_sw = 
+      pt.window#new_turnstile state current_sequent_id 
+        (Some current_sequent_text) in
+    Hashtbl.add pt.sequent_hash current_sequent_id first_sw;
+    let first_sw = (first_sw :> proof_tree_element) in
+    let other_sw =
+      List.fold_right
+        (fun id res ->
+! 	let sw = pt.window#new_turnstile state id None in
+  	Hashtbl.add pt.sequent_hash id sw;
+  	(sw :> proof_tree_element) :: res)
+        additional_ids []
+--- 565,587 ----
     let first_sw = 
       pt.window#new_turnstile state current_sequent_id 
         (Some current_sequent_text) in
 +   first_sw#update_assumption a_list; (* for initialization *)
++   if Hashtbl.mem pt.sequent_hash current_sequent_id then begin
++       let ts = Hashtbl.find pt.sequent_hash current_sequent_id in 
++       ts#mark_branch (fun n -> n#set_branch_state Proven; true);
++       ts#set_branch_state Unproven;
++     end;
     Hashtbl.add pt.sequent_hash current_sequent_id first_sw;
     let first_sw = (first_sw :> proof_tree_element) in
     let other_sw =
+      List.fold_right
+        (fun id res ->
+! 	let sw = pt.window#new_turnstile state id (
+!                      if Hashtbl.mem pt.sequent_hash id then
+!                          let ts = Hashtbl.find pt.sequent_hash id in
+!                          Some ts#content
+!                      else None
+!                    ) in
+  	Hashtbl.add pt.sequent_hash id sw;
+  	(sw :> proof_tree_element) :: res)
+        additional_ids []
+***************
+*** 556,561 ****
+--- 589,596 ----
+    let all_roots = first_sw :: other_sw in
+    let layer = new tree_layer all_roots in
+    let layer_undo_pos = pt.window#layer_stack#add_layer layer in
++   let (ptcsi, ptcs, ptogc) = 
++     (pt.current_sequent_id, pt.current_sequent, pt.open_goals_count) in
+    pt.current_sequent_id <- Some current_sequent_id;
+    pt.current_sequent <- Some first_sw;
+    pt.open_goals_count <- List.length all_roots;
+***************
+*** 573,586 ****
+    let unhash_sequent_ids = current_sequent_id :: additional_ids in
+    let undo () =
+      List.iter (fun s -> s#delete_non_sticky_external_windows) all_roots;
+!     List.iter (fun id -> Hashtbl.remove pt.sequent_hash id) unhash_sequent_ids;
+      List.iter 
+        (fun sw -> if sw#is_selected then pt.window#set_selected_node None)
+        all_roots;
+      pt.window#layer_stack#del_layer layer_undo_pos;
+!     pt.current_sequent_id <- None;
+!     pt.current_sequent <- None;
+!     pt.open_goals_count <- 0;
+    in
+    add_undo_action pt state undo;
+    pt.need_redraw <- true;
+--- 608,634 ----
+    let unhash_sequent_ids = current_sequent_id :: additional_ids in
+    let undo () =
+      List.iter (fun s -> s#delete_non_sticky_external_windows) all_roots;
+!     List.iter (fun id ->
+!         let ts = Hashtbl.find pt.sequent_hash id in
+!         Hashtbl.remove pt.sequent_hash id;
+!         let ts' = Hashtbl.find pt.sequent_hash id in 
+!         if List.length ts'#children = 0 then
+!           ts'#set_branch_state ts#branch_state
+!       ) unhash_sequent_ids;
+      List.iter 
+        (fun sw -> if sw#is_selected then pt.window#set_selected_node None)
+        all_roots;
+      pt.window#layer_stack#del_layer layer_undo_pos;
+!     pt.current_sequent_id <- ptcsi; (* None *)
+!     pt.current_sequent <- ptcs; (* None *)
+!     pt.open_goals_count <- ptogc; (* 0 *)
+!     (* change branch_state of all parents *)
+!     match ptcsi with
+!     | Some i -> begin
+!         let ts = Hashtbl.find pt.sequent_hash i in
+!         ts#mark_branch (fun n -> n#set_branch_state Current; true);
+!       end
+!     | _ -> ();
+    in
+    add_undo_action pt state undo;
+    pt.need_redraw <- true;
 ***************
 *** 608,614 ****
   *)
@@ -2140,7 +2247,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
     assert(cheated_flag = false);
     let (ex_got_instantiated, new_existentials) =
       update_existentials pt.existential_hash
---- 626,632 ----
+--- 656,662 ----
   *)
   let add_new_goal pt state proof_command cheated_flag current_sequent_id
       current_sequent_text additional_ids 
@@ -2161,7 +2268,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
     let new_goal_ids_rev = 
       list_filter_rev 
         (fun id -> not (Hashtbl.mem pt.sequent_hash id))
---- 647,664 ----
+--- 677,694 ----
     in
     let pc = (pc :> proof_tree_element) in
     set_children parent [pc];
@@ -2192,11 +2299,17 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
         [] new_goal_ids_rev
     in
     let position_hints = match new_goals with
---- 666,675 ----
+--- 696,711 ----
     let new_goals =
       List.fold_left
         (fun res id ->
-! 	let sw' = pt.window#new_turnstile state id None in
+! 	let sw' = pt.window#new_turnstile state id (
+!                       if Hashtbl.mem pt.sequent_hash id then begin
+!                           let ts = Hashtbl.find pt.sequent_hash id
+!                           in Some ts#content
+!                         end
+!                       else None
+!                     ) in
 ! 	Hashtbl.add pt.sequent_hash id sw';
 ! 	let pte' = (sw' :> proof_tree_element) in
 ! 	pte' :: res)
@@ -2222,7 +2335,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
     pt.window#set_position_hints position_hints;
     (* The uninstantiated existentials are displayed together with the
      * sequent. Therefore, if some existential got instantiated we have
---- 679,699 ----
+--- 715,735 ----
         let last = list_last rest in
         [[last; pc]; [snd; pc]; [snd]; [pc]]
     in
@@ -2245,8 +2358,8 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
     (* The uninstantiated existentials are displayed together with the
      * sequent. Therefore, if some existential got instantiated we have
 ***************
-*** 734,739 ****
---- 763,777 ----
+*** 734,742 ****
+--- 799,824 ----
     let pc = (pc :> proof_tree_element) in
     parent#unmark_current;
     set_children parent [pc];
@@ -2261,10 +2374,21 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
 + 
     if cheated_flag 
     then pc#mark_cheated
++ (*
     else pc#mark_proved;
++  *)
++   else begin
++       try 
++         ignore (Str.search_forward (Str.regexp "^shelve") proof_command 0);
++         pc#unmark_proved_or_cheated
++       with Not_found -> pc#mark_proved
++     end;
+    let old_cheated = pt.cheated in
+    let old_current_sequent = parent in
+    let old_current_sequent_id = pt.current_sequent_id in
 ***************
 *** 784,789 ****
---- 822,846 ----
+--- 866,890 ----
       Hashtbl.find pt.sequent_hash new_current_sequent_id 
     in
     let new_current_sequent = (new_current_sequent :> proof_tree_element) in
@@ -2292,7 +2416,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
       pt.current_sequent_id <- None;
 ***************
 *** 797,802 ****
---- 854,860 ----
+--- 898,904 ----
     add_undo_action pt state undo;
     pt.need_redraw <- true
   
@@ -2309,7 +2433,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
     (match !current_proof_tree with
       | Some pt -> 
         if pt.proof_name <> proof_name 
---- 882,888 ----
+--- 926,932 ----
   (* See mli for doc *)
   let process_current_goals state proof_name proof_command cheated_flag
       layer_flag current_sequent_id current_sequent_text additional_ids 
@@ -2318,7 +2442,15 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
       | Some pt -> 
         if pt.proof_name <> proof_name 
 ***************
-*** 842,848 ****
+*** 834,848 ****
+    let pt = match !current_proof_tree with
+      | None -> start_new_proof state proof_name
+      | Some pt ->
+        assert ((iff (pt.current_sequent = None) (pt.current_sequent_id = None))
+  	      && (iff layer_flag (pt.current_sequent = None)));
+        pt
+    in
+    if layer_flag
     then begin
       assert (cheated_flag = false);
       create_new_layer pt state current_sequent_id current_sequent_text
@@ -2326,9 +2458,21 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
     end else
       if pt.current_sequent_id <> (Some current_sequent_id) &&
         Hashtbl.mem pt.sequent_hash current_sequent_id
---- 900,906 ----
+--- 936,954 ----
+    let pt = match !current_proof_tree with
+      | None -> start_new_proof state proof_name
+      | Some pt ->
++ (**********************************************
+        assert ((iff (pt.current_sequent = None) (pt.current_sequent_id = None))
+  	      && (iff layer_flag (pt.current_sequent = None)));
++  *)
+        pt
+    in
+    if layer_flag
     then begin
++ (*********************************
       assert (cheated_flag = false);
++  *)
       create_new_layer pt state current_sequent_id current_sequent_text
 !       additional_ids uninstatiated_existentials instantiated_ex_deps a_list
     end else
@@ -2362,7 +2506,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
     match !current_proof_tree with
       | None ->
         raise (Proof_tree_error "Update sequent without current proof tree")
---- 911,946 ----
+--- 959,994 ----
       else
         add_new_goal pt state proof_command cheated_flag current_sequent_id 
   	current_sequent_text additional_ids 
@@ -2408,7 +2552,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
         with
   	| Not_found ->
   	  raise (Proof_tree_error "Update unknown sequent")
---- 949,955 ----
+--- 997,1003 ----
         then raise (Proof_tree_error "Update sequent on other non-current proof");
         try
   	update_sequent_element pt state 
@@ -2418,7 +2562,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
   	  raise (Proof_tree_error "Update unknown sequent")
 ***************
 *** 956,961 ****
---- 1024,1056 ----
+--- 1072,1104 ----
         assert (pt.current_sequent <> None && pt.current_sequent_id <> None);
         finish_branch pt state proof_command cheated_flag
   	uninstatiated_existentials instantiated_ex_deps;
@@ -2454,7 +2598,7 @@ diff -c prooftree-0.13/proof_tree.ml traf-current/proof_tree.ml
   	then begin
 ***************
 *** 1045,1050 ****
---- 1140,1146 ----
+--- 1188,1194 ----
       if pt.need_redraw then begin
         pt.window#refresh_and_position;
         pt.window#update_ext_dialog;

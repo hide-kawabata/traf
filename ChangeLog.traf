@@ -1,6 +1,7 @@
 2018-06-08  Hideyuki Kawabata
 
 	* support tactics that handle goals with meta-variables
+	* support shelve/Unshelve/Backtrack (partially)
 
 2018-06-04  Hideyuki Kawabata
 
