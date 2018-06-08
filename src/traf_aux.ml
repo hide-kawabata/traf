@@ -293,6 +293,8 @@ let discharged_node proof_command parent new_dis_node =
   check_tactic "move" f (fun () -> 
   check_tactic "eapply" f (fun () -> 
   check_tactic "apply" f (fun () -> 
+  check_tactic "eexact" f (fun () -> 
+  check_tactic "exact" f (fun () -> 
   check_tactic "inversion" f (fun () ->
   check_tactic "induction" f (fun () ->
   check_tactic "destruct" f (fun () ->
@@ -302,6 +304,7 @@ let discharged_node proof_command parent new_dis_node =
   check_tactic "replace" f (fun () ->
   check_tactic "done" g (fun () ->
   check_tactic "trivial" g (fun () ->
+  check_tactic "eassumption" g (fun () ->
   check_tactic "assumption" g (fun () ->
   check_tactic "\\[\\]" g (fun () ->
-      [])))))))))))))))
+      []))))))))))))))))))

@@ -1,3 +1,7 @@
+2018-06-08  Hideyuki Kawabata
+
+	* support tactics that handle goals with meta-variables
+
 2018-06-04  Hideyuki Kawabata
 
 	* fix a bug of conv_latex.ml
