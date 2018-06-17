@@ -1,3 +1,7 @@
+2018-06-17  Hideyuki Kawabata
+
+	* fix a bug of pg.patch
+
 2018-06-08  Hideyuki Kawabata
 
 	* support tactics that handle goals with meta-variables
