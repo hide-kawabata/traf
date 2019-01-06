@@ -11,9 +11,11 @@ Traf is an extention to a proof tree viewer named Prooftree. Traf version 0.1 is
 
 
 
-Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Yuuki Sasaki and Mai Kimura, at Hiroshima City University.
+Traf version 0.1 has been developed by Hideyuki Kawabata and Yuta Tanaka, with Yuuki Sasaki and Mai Kimura, at Hiroshima City University [1].
 
 This is version 0.1.2 of Traf.
+
+[1] Hideyuki Kawabata, Yuta Tanaka, Mai Kimura and Tetsuo Hironaka, Traf: a Graphical Proof Tree Viewer Cooperating with Coq through Proof General, 16th Asian Symposium on Programming Languages and Systems (APLAS 2018), LNCS 11275, pp.157--165, 2018. DOI: 10.1007/978-3-030-02768-1_9
 
 ## Requirement
 
@@ -31,6 +33,14 @@ Checked environments:
 - macOS Sierra 10.12.6
 - ubuntu 16.04 LTS
 
+#### Note: a bug ?
+On macOS Mojave (10.14.*), Traf does not seem to work smoothly; 
+it does not update what is displayed in its window while it is running background.
+You seem to be required to give a focus on the window to update the tree shown by Traf.
+
+Known workaround: when you use Split View to show Traf and Emacs on a screen simultaneously,
+no problem seems to occur.
+
 #### Note: for users of Coq 8.7 or later
 Proof General requires slight modification.
 Please apply the patch file in `misc` and rebuild PG.
@@ -42,6 +52,7 @@ Please apply the patch file in `misc` and rebuild PG.
 Note 1: This modification of PG is also recommended for Coq 8.6 users because of a slight (preferable, maybe) change of behavior.
 Note 2: Proof General v4.4 (released on 19 Sep 2016) is not supported. Please use later versions.
 
+Note 3: When you install PG by using MELPA, you might have to modify files in a directory named like ~/.emacs.d/elpa/proof-general-20181226.2300/. Be sure that you might have to byte-compile .el files into .elc files.
 
 ## Building Traf
 
