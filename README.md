@@ -21,7 +21,7 @@ This is version 0.1.2 of Traf.
 
 A New version of Traf is comming soon!
 - GTK3 based, utilizing lablgtk3 and cairo2
-- Supports for Fitch style-like proof tree drawing
+- Supports Fitch style-like proof tree drawing
 
 ## Requirement
 
@@ -29,8 +29,7 @@ Following programs are required to build and run Traf.
 Numbers indicate tested versions of corresponding software.
 
 - Coq 8.6.1, 8.7.2, 8.8.0 (with or without mathcomp 1.7.0)
-- Proof General 4.5, 4.4.1pre
- <!-- (use of Coq 8.7 or later requires rebuild of PG; see below) -->
+- Proof General 4.5, 4.4.1pre <!-- (use of Coq 8.7 or later requires rebuild of PG; see below) -->
 - GTK+ 2.0
 - Lablgtk 2.18.11, 2.18.10, 2.18.5 (`opam install lablgtk`)
 - OCaml 4.11.1, 4.10.0, 4.05.0
