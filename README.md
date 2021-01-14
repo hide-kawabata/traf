@@ -17,20 +17,26 @@ This is version 0.1.2 of Traf.
 
 [1] Hideyuki Kawabata, Yuta Tanaka, Mai Kimura and Tetsuo Hironaka, Traf: a Graphical Proof Tree Viewer Cooperating with Coq through Proof General, 16th Asian Symposium on Programming Languages and Systems (APLAS 2018), LNCS 11275, pp.157--165, 2018. DOI: 10.1007/978-3-030-02768-1_9
 
+## News
+
+A New version of Traf is comming soon!
+- GTK3 based, utilizing lablgtk3 and cairo2
+- Supports for Fitch style-like proof tree drawing
+
 ## Requirement
 
 Following programs are required to build and run Traf.
 Numbers indicate tested versions of corresponding software.
 
 - Coq 8.6.1, 8.7.2, 8.8.0 (with or without mathcomp 1.7.0)
-- Proof General 4.4.1pre (use of Coq 8.7 or later requires rebuild of PG; see below)
+- Proof General 4.5, 4.4.1pre (use of Coq 8.7 or later requires rebuild of PG; see below)
 - GTK+ 2.0
-- Lablgtk 2.18.5
-- OCaml 4.05.0
+- Lablgtk 2.18.11, 2.18.10, 2.18.5 (`opam install lablgtk`)
+- OCaml 4.11.1, 4.10.0, 4.05.0
 
 Checked environments: 
 
-- macOS Sierra 10.12.6
+- macOS Catalina 10.15.7, Mojave 10.14.6, Sierra 10.12.6
 - ubuntu 16.04 LTS
 
 #### Note: a bug ?
@@ -41,13 +47,15 @@ You seem to be required to give a focus on the window to update the tree shown b
 Known workaround: when you use Split View to show Traf and Emacs on a screen simultaneously,
 no problem seems to occur.
 
-#### Note: for users of Coq 8.7 or later
+#### Note: for users of Coq 8.7 or later with PG 4.4.1
 Proof General requires slight modification.
 Please apply the patch file in `misc` and rebuild PG.
 
     $ cd pg_top_dir
     $ patch -p0 < traf_top_dir/misc/pg.patch
     $ make
+
+Note 0: Probably this modification is not required for PG 4.5.
 
 Note 1: This modification of PG is also recommended for Coq 8.6 users because of a slight (preferable, maybe) change of behavior.
 Note 2: Proof General v4.4 (released on 19 Sep 2016) is not supported. Please use later versions.
@@ -113,8 +121,8 @@ Put following lines in `.emacs` (the 2nd line only is related to Traf):
     (setq proof-tree-program "/home/where/my/musics/playing/traf")
     (load "/home/where/my/love/lies/waiting/generic/proof-site")
 
+- The third line is not required if you have been already using PG, or you have install PG by using MELPA.
 - Note that you can modify `exec-path` to make the values of `coq-prog-name` and `proof-tree-program` short.
-
 - Note that you can not share coq library if your machine has multiple versions of `coqtop`. Since PG is not smart enough to detect the place where the corresponding version of the library for each `coqtop` is installed (default lib dir: `/usr/local/lib/coq`), we advise that `coq-prog-name` is not a symbolic link to `coqtop`. For example, if you are using Homebrew, we recommend you write
 
     ```
@@ -127,6 +135,7 @@ in order to avoid troubles in advance.
 ## Usage
 
 - While proving a theorem by using Proof General, you can invoke Traf by clicking the "prooftree icon", or equivalently, type `C-c C-d` (`proof-tree-external-display-toggle`).
+Note that if you are using company-coq `C-c C-d` might be assigned to a different function.
 - You can perform anything while proving with PG; e.g., `C-c RET (proof-goto-point)`, `C-c C-u (proof-undo-last-successful-command)`, etc. The proof tree shown in the Traf window changes synchronously.
 - Once a proof of a theorem (`Theorem`, `Lemma`, `Example`, whatever) is finished, i.e., the vernacular command `Qed` is given to Coq, the connection between PG and Traf is closed (but the Traf window remains on the screen and you can manipulate it).
 When you start proving another theorem, you are required to invoke Traf again (by entering `C-c C-d`).
