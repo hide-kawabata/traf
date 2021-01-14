@@ -29,7 +29,8 @@ Following programs are required to build and run Traf.
 Numbers indicate tested versions of corresponding software.
 
 - Coq 8.6.1, 8.7.2, 8.8.0 (with or without mathcomp 1.7.0)
-- Proof General 4.5, 4.4.1pre (use of Coq 8.7 or later requires rebuild of PG; see below)
+- Proof General 4.5, 4.4.1pre
+ <!-- (use of Coq 8.7 or later requires rebuild of PG; see below) -->
 - GTK+ 2.0
 - Lablgtk 2.18.11, 2.18.10, 2.18.5 (`opam install lablgtk`)
 - OCaml 4.11.1, 4.10.0, 4.05.0
@@ -121,7 +122,7 @@ Put following lines in `.emacs` (the 2nd line only is related to Traf):
     (setq proof-tree-program "/home/where/my/musics/playing/traf")
     (load "/home/where/my/love/lies/waiting/generic/proof-site")
 
-- The third line is not required if you have been already using PG, or you have install PG by using MELPA.
+- The third line is not required if you have been already using PG, or you have installed PG by using MELPA.
 - Note that you can modify `exec-path` to make the values of `coq-prog-name` and `proof-tree-program` short.
 - Note that you can not share coq library if your machine has multiple versions of `coqtop`. Since PG is not smart enough to detect the place where the corresponding version of the library for each `coqtop` is installed (default lib dir: `/usr/local/lib/coq`), we advise that `coq-prog-name` is not a symbolic link to `coqtop`. For example, if you are using Homebrew, we recommend you write
 
@@ -138,4 +139,6 @@ in order to avoid troubles in advance.
 Note that if you are using company-coq `C-c C-d` might be assigned to a different function.
 - You can perform anything while proving with PG; e.g., `C-c RET (proof-goto-point)`, `C-c C-u (proof-undo-last-successful-command)`, etc. The proof tree shown in the Traf window changes synchronously.
 - Once a proof of a theorem (`Theorem`, `Lemma`, `Example`, whatever) is finished, i.e., the vernacular command `Qed` is given to Coq, the connection between PG and Traf is closed (but the Traf window remains on the screen and you can manipulate it).
-When you start proving another theorem, you are required to invoke Traf again (by entering `C-c C-d`).
+When you start proving another theorem, you are required to invoke Traf again 
+(by clicking the "prooftree icon").
+<!-- entering `C-c C-d`). -->
