@@ -31,11 +31,15 @@ Numbers indicate tested versions of corresponding software.
 <!-- - Coq 8.6.1, 8.7.2, 8.8.0 (with or without mathcomp 1.7.0) -->
 - Coq 8.10.2, 8.9.1, 8.8.2, 8.7.2, 8.6.1
 <!-- - Proof General 4.5, 4.4.1pre (use of Coq 8.7 or later requires rebuild of PG; see below) -->
-- Proof General 4.4, 4.4.1pre (modification required for Coq 8.7 or later)
- <!-- (use of Coq 8.7 or later requires rebuild of PG; see below) --> -->
-- GTK+ 2.0
+- Proof General 4.5 (Coq 8.6), 4.4, 4.4.1pre (modification required for Coq 8.7 or later)
+- GTK+ 2.24
 - Lablgtk 2.18.11, 2.18.10, 2.18.5 (`opam install lablgtk`)
 - OCaml 4.11.1, 4.10.0, 4.05.0
+
+If you use Coq 8.6, Proof General 4.4 and 4.5 can be used without any modification.
+If you want to use Coq 8.7, 8.8, 8.9, or 8.10, Proof General 4.4 (with slight modification) can only be used. Coq 8.11 or later is not currently supported.
+
+Note that Proof General 4.4 is the latest version available at `stable.melpa.org`.The version of Coq used with Traf can be easily changed by modifying a single line of `.emacs`.
 
 Checked environments: 
 
@@ -59,6 +63,7 @@ Please apply the patch file in `misc` and rebuild PG.
     $ make
 
 <!-- Note 0: Probably this modification is not required for PG 4.5. -->
+Note 0: If you use PG 4.4.1pre, use `pg.patch` instead of `pg44.patch`.
 
 Note 1: This modification of PG is also recommended for Coq 8.6 users because of a slight (preferable, maybe) change of behavior.
 
@@ -125,7 +130,7 @@ Put following lines in `.emacs` (the 2nd line only is related to Traf):
     (setq proof-tree-program "/home/where/my/musics/playing/traf")
     (load "/home/where/my/love/lies/waiting/generic/proof-site")
 
-<!-- - The third line is not required if you have been already using PG, or you have installed PG by using MELPA. -->
+- The third line may not be required if you have been already using PG, or you have installed PG by using MELPA.
 - Note that you can modify `exec-path` to make the values of `coq-prog-name` and `proof-tree-program` short.
 - Note that you can not share coq library if your machine has multiple versions of `coqtop`. Since PG is not smart enough to detect the place where the corresponding version of the library for each `coqtop` is installed (default lib dir: `/usr/local/lib/coq`), we advise that `coq-prog-name` is not a symbolic link to `coqtop`. For example, if you are using Homebrew, we recommend you write
 
