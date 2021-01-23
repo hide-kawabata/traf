@@ -28,39 +28,43 @@ A New version of Traf is comming soon!
 Following programs are required to build and run Traf.
 Numbers indicate tested versions of corresponding software.
 
-- Coq 8.6.1, 8.7.2, 8.8.0 (with or without mathcomp 1.7.0)
-- Proof General 4.5, 4.4.1pre <!-- (use of Coq 8.7 or later requires rebuild of PG; see below) -->
+<!-- - Coq 8.6.1, 8.7.2, 8.8.0 (with or without mathcomp 1.7.0) -->
+- Coq 8.10.2, 8.9.1, 8.8.2, 8.7.2, 8.6.1
+<!-- - Proof General 4.5, 4.4.1pre (use of Coq 8.7 or later requires rebuild of PG; see below) -->
+- Proof General 4.4, 4.4.1pre (modification required for Coq 8.7 or later)
+ <!-- (use of Coq 8.7 or later requires rebuild of PG; see below) --> -->
 - GTK+ 2.0
 - Lablgtk 2.18.11, 2.18.10, 2.18.5 (`opam install lablgtk`)
 - OCaml 4.11.1, 4.10.0, 4.05.0
 
 Checked environments: 
 
-- macOS Catalina 10.15.7, Mojave 10.14.6, Sierra 10.12.6
+- macOS Big Sur 11.1 (M1), Catalina 10.15.7, Mojave 10.14.6, Sierra 10.12.6
 - ubuntu 16.04 LTS
 
 #### Note: a bug ?
 On macOS Mojave (10.14.*), Traf does not seem to work smoothly; 
-it does not update what is displayed in its window while it is running background.
+it may not update what is displayed in its window while it is running background.
 You seem to be required to give a focus on the window to update the tree shown by Traf.
 
-Known workaround: when you use Split View to show Traf and Emacs on a screen simultaneously,
-no problem seems to occur.
+Known workaround: when you use Split View to show Traf and Emacs on a screen simultaneously, no problem seems to occur.
 
-#### Note: for users of Coq 8.7 or later with PG 4.4.1
+<!-- #### Note: for users of Coq 8.7 or later with PG 4.4.1 -->
+#### Note: for users of Coq 8.7 or later
 Proof General requires slight modification.
 Please apply the patch file in `misc` and rebuild PG.
 
     $ cd pg_top_dir
-    $ patch -p0 < traf_top_dir/misc/pg.patch
+    $ patch -p0 < traf_top_dir/misc/pg44.patch
     $ make
 
-Note 0: Probably this modification is not required for PG 4.5.
+<!-- Note 0: Probably this modification is not required for PG 4.5. -->
 
 Note 1: This modification of PG is also recommended for Coq 8.6 users because of a slight (preferable, maybe) change of behavior.
-Note 2: Proof General v4.4 (released on 19 Sep 2016) is not supported. Please use later versions.
 
-Note 3: When you install PG by using MELPA, you might have to modify files in a directory named like ~/.emacs.d/elpa/proof-general-20181226.2300/. Be sure that you might have to byte-compile .el files into .elc files.
+<!-- Note 2: Proof General v4.4 (released on 19 Sep 2016) is not supported. Please use later versions. -->
+
+Note 2: When you install PG by using MELPA, you might have to modify files in a directory named like ~/.emacs.d/elpa/proof-general-20181226.2300/. Be sure that you might have to byte-compile .el files into .elc files.
 
 ## Building Traf
 
@@ -121,7 +125,7 @@ Put following lines in `.emacs` (the 2nd line only is related to Traf):
     (setq proof-tree-program "/home/where/my/musics/playing/traf")
     (load "/home/where/my/love/lies/waiting/generic/proof-site")
 
-- The third line is not required if you have been already using PG, or you have installed PG by using MELPA.
+<!-- - The third line is not required if you have been already using PG, or you have installed PG by using MELPA. -->
 - Note that you can modify `exec-path` to make the values of `coq-prog-name` and `proof-tree-program` short.
 - Note that you can not share coq library if your machine has multiple versions of `coqtop`. Since PG is not smart enough to detect the place where the corresponding version of the library for each `coqtop` is installed (default lib dir: `/usr/local/lib/coq`), we advise that `coq-prog-name` is not a symbolic link to `coqtop`. For example, if you are using Homebrew, we recommend you write
 
