@@ -39,6 +39,10 @@ Numbers indicate tested versions of corresponding software.
 If you use Coq 8.6, Proof General 4.4 and 4.5 can be used without any modification.
 If you want to use Coq 8.7, 8.8, 8.9, or 8.10, Proof General 4.4 (with slight modification) can only be used. Coq 8.11 or later is not currently supported.
 
+When you use Proof Gneral 4.4, you might want to add the following line to `.emacs`.
+
+    (load-library "cl-extra")
+
 Note that Proof General 4.4 is the latest version available at `stable.melpa.org`. The version of Coq used with Traf can be changed easily by modifying a single line of `.emacs`. Settings for Traf wont bother you while you are using higher versions of Coq through Proof General unless you try to open Traf's window by pushing "prooftree icon" on the menubar of Emacs.
 
 
